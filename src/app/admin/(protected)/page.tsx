@@ -6,8 +6,8 @@ import { Badge } from "@/components/ui/badge";
 
 const money = (n: number) => `$${n.toLocaleString("es-AR")}`;
 
-const PAID_STATUSES = ["NUEVO", "EN_PROCESO", "ENTREGADO"] as const;
-const LOW_STOCK_THRESHOLD = 5;
+const CONFIRMED_STATUSES = ["NUEVO", "EN_PROCESO", "ENTREGADO"] as const;
+const DEFAULT_LOW_STOCK_THRESHOLD = 5;
 
 export default async function AdminDashboard() {
   const startOfMonth = new Date();
@@ -19,36 +19,39 @@ export default async function AdminDashboard() {
     categoryCount,
     orderCount,
     pendingCount,
-    paidAgg,
-    monthPaidAgg,
-    lowStockCount,
+    confirmedAgg,
+    monthConfirmedAgg,
+    config,
   ] = await Promise.all([
     prisma.product.count(),
     prisma.category.count(),
     prisma.order.count(),
     prisma.order.count({ where: { status: "PENDIENTE_CONFIRMACION" } }),
     prisma.order.aggregate({
-      where: { status: { in: [...PAID_STATUSES] } },
+      where: { status: { in: [...CONFIRMED_STATUSES] } },
       _sum: { total: true },
       _count: true,
     }),
     prisma.order.aggregate({
-      where: { status: { in: [...PAID_STATUSES] }, createdAt: { gte: startOfMonth } },
+      where: { status: { in: [...CONFIRMED_STATUSES] }, createdAt: { gte: startOfMonth } },
       _sum: { total: true },
     }),
-    prisma.product.count({ where: { stock: { lte: LOW_STOCK_THRESHOLD } } }),
+    prisma.shippingConfig.findUnique({ where: { id: "config" } }),
   ]);
+
+  const lowStockThreshold = config?.lowStockThreshold ?? DEFAULT_LOW_STOCK_THRESHOLD;
+  const lowStockCount = await prisma.product.count({ where: { stock: { lte: lowStockThreshold } } });
 
   const metrics = [
     {
-      label: "Recaudado (total)",
-      value: money(paidAgg._sum.total ?? 0),
+      label: "Recaudado (confirmado)",
+      value: money(confirmedAgg._sum.total ?? 0),
       icon: Wallet,
-      hint: `${paidAgg._count} pedidos pagos`,
+      hint: `${confirmedAgg._count} pedidos confirmados`,
     },
     {
       label: "Recaudado este mes",
-      value: money(monthPaidAgg._sum.total ?? 0),
+      value: money(monthConfirmedAgg._sum.total ?? 0),
       icon: Wallet,
       hint: startOfMonth.toLocaleDateString("es-AR", { month: "long", year: "numeric" }),
     },
@@ -60,10 +63,10 @@ export default async function AdminDashboard() {
       alert: pendingCount > 0,
     },
     {
-      label: "Pedidos pagos",
-      value: String(paidAgg._count),
+      label: "Confirmados",
+      value: String(confirmedAgg._count),
       icon: CheckCircle2,
-      hint: `de ${orderCount} totales`,
+      hint: `de ${orderCount} totales — confirmación manual, sin pasarela de pago`,
     },
   ];
 
@@ -130,7 +133,7 @@ export default async function AdminDashboard() {
               <AlertTriangle className="size-4 text-amber-700 shrink-0" />
               <p className="text-sm">
                 <span className="font-medium">{lowStockCount} producto{lowStockCount === 1 ? "" : "s"}</span> con
-                stock bajo (≤ {LOW_STOCK_THRESHOLD} unidades). Revisá el catálogo.
+                stock bajo (≤ {lowStockThreshold} unidades). Revisá el catálogo.
               </p>
             </CardContent>
           </Card>

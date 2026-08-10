@@ -131,20 +131,18 @@ export async function confirmOrderPayment(formData: FormData) {
 // ---- Envio ----
 
 export async function updateShippingConfig(formData: FormData) {
+  const data = {
+    freeShippingRadiusKm: Number(formData.get("freeShippingRadiusKm")),
+    freeShippingMinAmount: Number(formData.get("freeShippingMinAmount")),
+    baseShippingCost: Number(formData.get("baseShippingCost")),
+    lowStockThreshold: Number(formData.get("lowStockThreshold")),
+  };
   await prisma.shippingConfig.upsert({
     where: { id: "config" },
-    update: {
-      freeShippingRadiusKm: Number(formData.get("freeShippingRadiusKm")),
-      freeShippingMinAmount: Number(formData.get("freeShippingMinAmount")),
-      baseShippingCost: Number(formData.get("baseShippingCost")),
-    },
-    create: {
-      id: "config",
-      freeShippingRadiusKm: Number(formData.get("freeShippingRadiusKm")),
-      freeShippingMinAmount: Number(formData.get("freeShippingMinAmount")),
-      baseShippingCost: Number(formData.get("baseShippingCost")),
-    },
+    update: data,
+    create: { id: "config", ...data },
   });
   revalidatePath("/admin/envio");
+  revalidatePath("/admin");
   revalidatePath("/checkout");
 }

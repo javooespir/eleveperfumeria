@@ -66,4 +66,5 @@ model ShippingConfig {
   freeShippingRadiusKm  Float  @default(5)
   freeShippingMinAmount Float  @default(50000)
   baseShippingCost      Float  @default(2500)
+  lowStockThreshold     Int    @default(5)
 }
