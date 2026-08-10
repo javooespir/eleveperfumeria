@@ -1,0 +1,69 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Category {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  slug      String    @unique
+  products  Product[]
+  createdAt DateTime  @default(now())
+}
+
+model Product {
+  id              String   @id @default(cuid())
+  productCode     String?  // codigo interno del cliente para su propio stock
+  name            String
+  brand           String
+  description     String
+  price           Float    // precio minorista
+  wholesalePrice  Float?   // precio mayorista (5+ unidades). Si es null, se usa price.
+  discountActive  Boolean  @default(false)
+  discountPercent Int      @default(0)
+  isFeatured      Boolean  @default(false) // aparece en "Sets y novedades" de la landing
+  isTrending      Boolean  @default(false) // aparece en "Los más buscados" de la landing
+  images          String   // JSON-encoded array of image URLs (SQLite has no native array type)
+  stock           Int      @default(0)
+  categoryId      String
+  category        Category @relation(fields: [categoryId], references: [id])
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Order {
+  id          String      @id @default(cuid())
+  customerName  String
+  phone       String
+  address     String
+  distanceKm  Float
+  buyerType   String      @default("minorista") // "minorista" | "mayorista"
+  itemsJson   String      // JSON-encoded array of {productId, name, qty, unitPrice}
+  subtotal    Float
+  shippingCost Float
+  total       Float
+  status      OrderStatus @default(PENDIENTE_CONFIRMACION)
+  createdAt   DateTime    @default(now())
+}
+
+enum OrderStatus {
+  PENDIENTE_CONFIRMACION // esperando que el cliente confirme la transferencia/pago
+  NUEVO
+  EN_PROCESO
+  ENTREGADO
+}
+
+// Singleton row (id fixed to "config") holding editable shipping rules for the admin panel.
+model ShippingConfig {
+  id                    String @id @default("config")
+  freeShippingRadiusKm  Float  @default(5)
+  freeShippingMinAmount Float  @default(50000)
+  baseShippingCost      Float  @default(2500)
+}
