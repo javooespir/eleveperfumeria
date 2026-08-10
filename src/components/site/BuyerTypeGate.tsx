@@ -21,6 +21,12 @@ export function BuyerTypeGate() {
         onInteractOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
         className="sm:max-w-md text-center"
+        // Este gate es bloqueante (define precios minorista/mayorista) — no puede
+        // depender de que la animacion de entrada del Dialog termine de correr.
+        // Se vio quedar pegada en opacity:0 (stuck mid-animation), dejando el
+        // popup invisible pero presente. Estilo inline gana siempre sobre la
+        // animacion via clase, asi que fuerza visibilidad sin excepcion.
+        style={{ animation: "none", opacity: 1 }}
       >
         <DialogTitle className="font-heading text-xl font-light">¿Cómo comprás?</DialogTitle>
         <DialogDescription className="text-sm text-muted-foreground">
