@@ -20,7 +20,7 @@ import { WHOLESALE_MIN_UNITS } from "@/lib/types";
 // Adaptado de un patron "Earbud Showcase" (21st.dev): mismo esqueleto de
 // animacion (switch entre dos estados con framer-motion, imagen + panel de
 // datos + selector), reescrito para minorista/mayorista y con la paleta de
-// ÉLEVÉ (negro / blanco / champagne) en vez de azul/verde.
+// ELEVÉ (negro / blanco / champagne) en vez de azul/verde.
 
 type Mode = "retail" | "wholesale";
 

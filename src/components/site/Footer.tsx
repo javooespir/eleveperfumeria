@@ -154,7 +154,7 @@ export function Footer() {
         viewport={{ once: true }}
         variants={itemVariants}
       >
-        <p>&copy; {new Date().getFullYear()} ÉLEVÉ — Perfumería de catálogo</p>
+        <p>&copy; {new Date().getFullYear()} ELEVÉ — Perfumería de catálogo</p>
         <p className="mt-2 flex items-center justify-center gap-3">
           <Link href="/terminos" className="underline hover:text-foreground transition-colors">
             Términos y condiciones

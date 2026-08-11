@@ -108,7 +108,7 @@ export default async function AdminDashboard() {
   return (
     <div>
       <h1 className="text-2xl font-heading font-light mb-1">Panel</h1>
-      <p className="text-sm text-muted-foreground mb-8">Resumen general de ÉLEVÉ.</p>
+      <p className="text-sm text-muted-foreground mb-8">Resumen general de ELEVÉ.</p>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {metrics.map((m) => {

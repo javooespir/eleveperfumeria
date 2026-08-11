@@ -56,7 +56,7 @@ export default async function AdminProtectedLayout({ children }: { children: Rea
             </SheetTrigger>
             <SheetContent side="left" className="p-0 w-64">
               <SheetHeader className="border-b border-border">
-                <SheetTitle>ÉLEVÉ Admin</SheetTitle>
+                <SheetTitle>ELEVÉ Admin</SheetTitle>
               </SheetHeader>
               <nav className="flex flex-col gap-0.5 p-3">
                 {NAV.map((item) => {

@@ -1,4 +1,4 @@
-// Seed data para el prototipo ÉLEVÉ. Productos y precios extraidos de las
+// Seed data para el prototipo ELEVÉ. Productos y precios extraidos de las
 // fichas reales que paso el cliente (product w price/). Fotos en /public/images/products.
 import { PrismaClient } from "../src/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";

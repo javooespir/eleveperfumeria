@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Política de privacidad",
-  description: "Cómo tratamos tus datos en ÉLEVÉ.",
+  description: "Cómo tratamos tus datos en ELEVÉ.",
   alternates: { canonical: "/privacidad" },
 };
 

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 // Una sola familia (Archivo) para todo el sitio, en linea con el trazo
-// geometrico y compacto del isotipo de ÉLEVÉ — variantes por peso, no por fuente.
+// geometrico y compacto del isotipo de ELEVÉ — variantes por peso, no por fuente.
 import { Archivo } from "next/font/google";
 import "./globals.css";
 import { SITE_URL } from "@/lib/site";
@@ -15,24 +15,24 @@ const archivo = Archivo({
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "ÉLEVÉ — Perfumería",
-    template: "%s — ÉLEVÉ",
+    default: "ELEVÉ — Perfumería",
+    template: "%s — ELEVÉ",
   },
   description:
-    "Catálogo de fragancias ÉLEVÉ. Envíos a domicilio y coordinación por WhatsApp.",
+    "Catálogo de fragancias ELEVÉ. Envíos a domicilio y coordinación por WhatsApp.",
   alternates: { canonical: "/" },
   openGraph: {
     type: "website",
     locale: "es_AR",
     url: SITE_URL,
-    siteName: "ÉLEVÉ",
+    siteName: "ELEVÉ",
   },
 };
 
 const organizationJsonLd = {
   "@context": "https://schema.org",
   "@type": "Organization",
-  name: "ÉLEVÉ",
+  name: "ELEVÉ",
   url: SITE_URL,
   logo: `${SITE_URL}/images/logo-crop.png`,
   description:

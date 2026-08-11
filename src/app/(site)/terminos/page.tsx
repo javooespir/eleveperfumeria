@@ -3,7 +3,7 @@ import { WHOLESALE_MIN_UNITS } from "@/lib/types";
 
 export const metadata: Metadata = {
   title: "Términos y condiciones",
-  description: "Términos y condiciones de compra en ÉLEVÉ.",
+  description: "Términos y condiciones de compra en ELEVÉ.",
   alternates: { canonical: "/terminos" },
 };
 
@@ -19,7 +19,7 @@ export default function TerminosPage() {
         <section>
           <h2 className="font-heading text-base font-medium mb-1.5">Sobre este sitio</h2>
           <p>
-            ÉLEVÉ es un catálogo online de perfumería. El sitio muestra productos y precios,
+            ELEVÉ es un catálogo online de perfumería. El sitio muestra productos y precios,
             pero no procesa pagos: cada pedido se coordina y confirma directamente por WhatsApp
             con nuestro equipo.
           </p>

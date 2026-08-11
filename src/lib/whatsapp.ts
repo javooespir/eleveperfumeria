@@ -18,7 +18,7 @@ export function buildWhatsAppMessage(params: {
   const { items, subtotal, shippingCost, total, customerName, phone, address } = params;
 
   const lines = [
-    "Hola ÉLEVÉ! Quiero hacer este pedido:",
+    "Hola ELEVÉ! Quiero hacer este pedido:",
     "",
     ...items.map(
       (i) => `• ${i.name} x${i.qty} — ${money(i.unitPrice)} c/u = ${money(i.unitPrice * i.qty)}`
