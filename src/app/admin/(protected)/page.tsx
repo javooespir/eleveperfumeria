@@ -40,7 +40,9 @@ export default async function AdminDashboard() {
   ]);
 
   const lowStockThreshold = config?.lowStockThreshold ?? DEFAULT_LOW_STOCK_THRESHOLD;
-  const lowStockCount = await prisma.product.count({ where: { stock: { lte: lowStockThreshold } } });
+  const lowStockCount = await prisma.product.count({
+    where: { stock: { lte: lowStockThreshold }, isActive: true },
+  });
 
   const metrics = [
     {

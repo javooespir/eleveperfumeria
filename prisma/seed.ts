@@ -136,6 +136,9 @@ async function main() {
         discountPercent: p.discount ?? 0,
         isFeatured: p.featured ?? false,
         isTrending: p.trending ?? false,
+        // Sin foto/precio real todavia — quedan ocultos del catalogo
+        // publico hasta que el cliente confirme los datos reales.
+        isActive: false,
         images: JSON.stringify(placeholderImages(seedKey)),
         stock: 20,
         categoryId: category.id,

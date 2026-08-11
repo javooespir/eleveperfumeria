@@ -13,7 +13,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
 
   const [categories, quizProductsRaw] = await Promise.all([
     prisma.category.findMany({ orderBy: { name: "asc" } }),
-    prisma.product.findMany({ where: { name: { in: quizProductNames } } }),
+    prisma.product.findMany({ where: { name: { in: quizProductNames }, isActive: true } }),
   ]);
 
   const quizProducts: Product[] = quizProductsRaw.map((p) => ({

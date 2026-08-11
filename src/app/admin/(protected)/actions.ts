@@ -43,6 +43,7 @@ export async function createProduct(formData: FormData) {
       discountPercent: Number(formData.get("discountPercent") ?? 0),
       isFeatured: formData.get("isFeatured") === "on",
       isTrending: formData.get("isTrending") === "on",
+      isActive: formData.get("isActive") === "on",
       images: JSON.stringify(images.length ? images : ["https://picsum.photos/seed/placeholder/800/1000"]),
       categoryId: String(formData.get("categoryId")),
     },
@@ -76,6 +77,7 @@ export async function updateProduct(id: string, formData: FormData) {
       discountPercent: Number(formData.get("discountPercent") ?? 0),
       isFeatured: formData.get("isFeatured") === "on",
       isTrending: formData.get("isTrending") === "on",
+      isActive: formData.get("isActive") === "on",
       images: JSON.stringify(images.length ? images : ["https://picsum.photos/seed/placeholder/800/1000"]),
       categoryId: String(formData.get("categoryId")),
     },
@@ -91,6 +93,15 @@ export async function deleteProduct(formData: FormData) {
   await prisma.product.delete({ where: { id } });
   revalidatePath("/admin/productos");
   revalidatePath("/");
+}
+
+export async function toggleProductActive(formData: FormData) {
+  const id = String(formData.get("id"));
+  const active = formData.get("active") === "true";
+  await prisma.product.update({ where: { id }, data: { isActive: active } });
+  revalidatePath("/admin/productos");
+  revalidatePath("/");
+  revalidatePath("/catalogo");
 }
 
 // ---- Categorias ----

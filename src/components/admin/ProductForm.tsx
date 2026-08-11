@@ -18,6 +18,7 @@ type ProductFormValues = {
   discountPercent: number;
   isFeatured: boolean;
   isTrending: boolean;
+  isActive: boolean;
   images: string[];
   categoryId: string;
 };
@@ -136,9 +137,19 @@ export function ProductForm({
 
       <Card>
         <CardHeader>
-          <CardTitle>Visibilidad en landing</CardTitle>
+          <CardTitle>Visibilidad</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="flex flex-col gap-4">
+          <div className="flex items-center gap-2 pb-3 border-b border-border">
+            <input
+              id="isActive"
+              name="isActive"
+              type="checkbox"
+              defaultChecked={initial?.isActive ?? true}
+              className="size-4"
+            />
+            <Label htmlFor="isActive">Visible en el catálogo (destildá para ocultarlo sin borrarlo)</Label>
+          </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="flex items-center gap-2">
               <input

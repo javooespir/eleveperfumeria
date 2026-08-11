@@ -30,6 +30,7 @@ model Product {
   discountPercent Int      @default(0)
   isFeatured      Boolean  @default(false) // aparece en "Sets y novedades" de la landing
   isTrending      Boolean  @default(false) // aparece en "Los más buscados" de la landing
+  isActive        Boolean  @default(true) // false = oculto del catalogo publico, visible solo en el admin
   images          String   // JSON-encoded array of image URLs (SQLite has no native array type)
   stock           Int      @default(0)
   categoryId      String

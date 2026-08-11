@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { deleteProduct } from "../actions";
+import { deleteProduct, toggleProductActive } from "../actions";
 
 const money = (n: number) => `$${n.toLocaleString("es-AR")}`;
 
@@ -46,7 +46,12 @@ export default async function ProductosPage() {
               {products.map((p) => {
                 const image = (JSON.parse(p.images) as string[])[0];
                 return (
-                  <tr key={p.id} className="border-b border-border last:border-0 hover:bg-muted/40">
+                  <tr
+                    key={p.id}
+                    className={`border-b border-border last:border-0 hover:bg-muted/40 ${
+                      p.isActive ? "" : "opacity-50"
+                    }`}
+                  >
                     <td className="py-2.5 pl-4 pr-4">
                       <div className="relative size-10 overflow-hidden rounded-md bg-muted">
                         {image && (
@@ -56,7 +61,14 @@ export default async function ProductosPage() {
                     </td>
                     <td className="py-2.5 pr-4 text-muted-foreground">{p.productCode ?? "—"}</td>
                     <td className="py-2.5 pr-4">
-                      <p className="leading-tight">{p.name}</p>
+                      <div className="flex items-center gap-1.5">
+                        <p className="leading-tight">{p.name}</p>
+                        {!p.isActive && (
+                          <Badge variant="outline" className="text-[10px] shrink-0">
+                            Oculto
+                          </Badge>
+                        )}
+                      </div>
                       <p className="text-xs text-muted-foreground">{p.brand}</p>
                     </td>
                     <td className="py-2.5 pr-4 text-muted-foreground">{p.category.name}</td>
@@ -90,6 +102,13 @@ export default async function ProductosPage() {
                     </td>
                     <td className="py-2.5 pr-4">
                       <div className="flex gap-3 justify-end">
+                        <form action={toggleProductActive}>
+                          <input type="hidden" name="id" value={p.id} />
+                          <input type="hidden" name="active" value={p.isActive ? "false" : "true"} />
+                          <button type="submit" className="text-xs underline text-muted-foreground hover:text-foreground">
+                            {p.isActive ? "Ocultar" : "Mostrar"}
+                          </button>
+                        </form>
                         <Link href={`/admin/productos/${p.id}`} className="text-xs underline text-muted-foreground hover:text-foreground">
                           Editar
                         </Link>

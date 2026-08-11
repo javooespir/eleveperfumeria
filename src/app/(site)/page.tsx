@@ -39,8 +39,12 @@ function toProduct(p: {
 
 export default async function LandingPage() {
   const [trendingRaw, productCount, categoryCount] = await Promise.all([
-    prisma.product.findMany({ where: { isTrending: true }, take: 8, orderBy: { createdAt: "desc" } }),
-    prisma.product.count(),
+    prisma.product.findMany({
+      where: { isTrending: true, isActive: true },
+      take: 8,
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.product.count({ where: { isActive: true } }),
     prisma.category.count(),
   ]);
 

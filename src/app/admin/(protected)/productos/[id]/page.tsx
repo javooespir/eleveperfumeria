@@ -38,6 +38,7 @@ export default async function EditarProductoPage({
           discountPercent: product.discountPercent,
           isFeatured: product.isFeatured,
           isTrending: product.isTrending,
+          isActive: product.isActive,
           images: JSON.parse(product.images),
           categoryId: product.categoryId,
         }}
