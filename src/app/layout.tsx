@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 // geometrico y compacto del isotipo de ÉLEVÉ — variantes por peso, no por fuente.
 import { Archivo } from "next/font/google";
 import "./globals.css";
+import { SITE_URL } from "@/lib/site";
 
 const archivo = Archivo({
   variable: "--font-heading",
@@ -12,18 +13,28 @@ const archivo = Archivo({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://eleve-rho-snowy.vercel.app"),
-  title: "ÉLEVÉ — Perfumería",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: "ÉLEVÉ — Perfumería",
+    template: "%s — ÉLEVÉ",
+  },
   description:
     "Catálogo de fragancias ÉLEVÉ. Envíos a domicilio y coordinación por WhatsApp.",
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    locale: "es_AR",
+    url: SITE_URL,
+    siteName: "ÉLEVÉ",
+  },
 };
 
 const organizationJsonLd = {
   "@context": "https://schema.org",
   "@type": "Organization",
   name: "ÉLEVÉ",
-  url: "https://eleve-rho-snowy.vercel.app",
-  logo: "https://eleve-rho-snowy.vercel.app/images/logo-crop.png",
+  url: SITE_URL,
+  logo: `${SITE_URL}/images/logo-crop.png`,
   description:
     "Perfumería de catálogo: fragancias árabes y de diseñador, body splash y tubitos de muestra.",
 };
