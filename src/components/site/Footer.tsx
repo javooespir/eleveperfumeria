@@ -155,6 +155,15 @@ export function Footer() {
         variants={itemVariants}
       >
         <p>&copy; {new Date().getFullYear()} ÉLEVÉ — Perfumería de catálogo</p>
+        <p className="mt-2 flex items-center justify-center gap-3">
+          <Link href="/terminos" className="underline hover:text-foreground transition-colors">
+            Términos y condiciones
+          </Link>
+          <span aria-hidden>·</span>
+          <Link href="/privacidad" className="underline hover:text-foreground transition-colors">
+            Política de privacidad
+          </Link>
+        </p>
         <p className="mt-2">
           Creado por{" "}
           <a href="https://encende.click" className="underline hover:text-foreground transition-colors">
