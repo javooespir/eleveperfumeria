@@ -6,11 +6,7 @@ export default async function CheckoutPage() {
   const config = await prisma.shippingConfig.findUnique({ where: { id: "config" } });
 
   const rules = config
-    ? {
-        freeShippingRadiusKm: config.freeShippingRadiusKm,
-        freeShippingMinAmount: config.freeShippingMinAmount,
-        baseShippingCost: config.baseShippingCost,
-      }
+    ? { freeShippingMinAmount: config.freeShippingMinAmount }
     : defaultShippingRules;
 
   return (

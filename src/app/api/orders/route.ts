@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 
 export async function POST(request: Request) {
   const body = await request.json();
-  const { customerName, phone, address, distanceKm, buyerType, items, subtotal, shippingCost, total } = body;
+  const { customerName, phone, address, zone, buyerType, items, subtotal, shippingCost, total } = body;
 
   const cartItems = items as { productId: string; name: string; qty: number; unitPrice: number }[];
 
@@ -28,7 +28,7 @@ export async function POST(request: Request) {
           customerName,
           phone,
           address,
-          distanceKm,
+          zone,
           buyerType: buyerType === "mayorista" ? "mayorista" : "minorista",
           itemsJson: JSON.stringify(items),
           subtotal,

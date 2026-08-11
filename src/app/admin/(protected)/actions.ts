@@ -132,9 +132,7 @@ export async function confirmOrderPayment(formData: FormData) {
 
 export async function updateShippingConfig(formData: FormData) {
   const data = {
-    freeShippingRadiusKm: Number(formData.get("freeShippingRadiusKm")),
     freeShippingMinAmount: Number(formData.get("freeShippingMinAmount")),
-    baseShippingCost: Number(formData.get("baseShippingCost")),
     lowStockThreshold: Number(formData.get("lowStockThreshold")),
   };
   await prisma.shippingConfig.upsert({

@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { defaultShippingRules } from "@/lib/shipping";
+import { defaultShippingRules, SHIPPING_ZONES, ZONE_SHIPPING_COST } from "@/lib/shipping";
 import { updateShippingConfig } from "../actions";
 
 export default async function EnvioPage() {
@@ -22,19 +22,6 @@ export default async function EnvioPage() {
         <CardContent>
           <form action={updateShippingConfig} className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="freeShippingRadiusKm">Radio (km) con envío gratis</Label>
-              <Input
-                id="freeShippingRadiusKm"
-                name="freeShippingRadiusKm"
-                type="number"
-                min={0}
-                step="0.1"
-                defaultValue={rules.freeShippingRadiusKm}
-                required
-              />
-            </div>
-
-            <div className="flex flex-col gap-1.5">
               <Label htmlFor="freeShippingMinAmount">Monto mínimo para envío gratis</Label>
               <Input
                 id="freeShippingMinAmount"
@@ -42,18 +29,6 @@ export default async function EnvioPage() {
                 type="number"
                 min={0}
                 defaultValue={rules.freeShippingMinAmount}
-                required
-              />
-            </div>
-
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="baseShippingCost">Costo de envío base</Label>
-              <Input
-                id="baseShippingCost"
-                name="baseShippingCost"
-                type="number"
-                min={0}
-                defaultValue={rules.baseShippingCost}
                 required
               />
             </div>
@@ -74,6 +49,28 @@ export default async function EnvioPage() {
               Guardar
             </Button>
           </form>
+        </CardContent>
+      </Card>
+
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle>Costo de envío por zona</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-xs text-muted-foreground mb-4">
+            Valores de ejemplo, fijos en el código (no editables desde acá todavía). Cuando definas el
+            método de envío real (transportista, por km, etc.) los reemplazamos por un cotizador de verdad.
+          </p>
+          <div className="flex flex-col gap-2">
+            {SHIPPING_ZONES.map((z) => (
+              <div key={z.value} className="flex justify-between text-sm py-1.5 border-b border-border last:border-0">
+                <span>{z.label}</span>
+                <span className="text-muted-foreground">
+                  ${ZONE_SHIPPING_COST[z.value].toLocaleString("es-AR")}
+                </span>
+              </div>
+            ))}
+          </div>
         </CardContent>
       </Card>
     </div>

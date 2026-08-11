@@ -33,6 +33,7 @@ function DialogClose({
 
 function DialogOverlay({
   className,
+  style,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Overlay>) {
   return (
@@ -42,6 +43,13 @@ function DialogOverlay({
         "fixed inset-0 isolate z-50 bg-black/10 duration-100 supports-backdrop-filter:backdrop-blur-xs data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
         className
       )}
+      // La animacion de entrada/salida (tw-animate-css) se vio quedar
+      // trabada a mitad de camino en algunos casos, dejando el overlay
+      // invisible mientras esta abierto o visible-pero-atascado al cerrar
+      // (Radix espera a que la animacion termine para desmontar). Se
+      // desactiva por estilo inline — Radix desmonta al toque si detecta
+      // animation:none, asi que esto tambien arregla el cierre pegado.
+      style={{ animation: "none", ...style }}
       {...props}
     />
   )
@@ -49,6 +57,7 @@ function DialogOverlay({
 
 function DialogContent({
   className,
+  style,
   children,
   showCloseButton = true,
   ...props
@@ -64,6 +73,8 @@ function DialogContent({
           "fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-xl bg-popover p-4 text-sm text-popover-foreground ring-1 ring-foreground/10 duration-100 outline-none sm:max-w-sm data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
           className
         )}
+        // Ver comentario en DialogOverlay — misma animacion, mismo bug.
+        style={{ animation: "none", ...style }}
         {...props}
       >
         {children}

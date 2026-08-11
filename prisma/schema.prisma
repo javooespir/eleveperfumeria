@@ -43,7 +43,7 @@ model Order {
   customerName  String
   phone       String
   address     String
-  distanceKm  Float
+  zone        String      // "caba" | "zona_oeste" | "buenos_aires" | "otras_provincias"
   buyerType   String      @default("minorista") // "minorista" | "mayorista"
   itemsJson   String      // JSON-encoded array of {productId, name, qty, unitPrice}
   subtotal    Float
@@ -60,11 +60,12 @@ enum OrderStatus {
   ENTREGADO
 }
 
-// Singleton row (id fixed to "config") holding editable shipping rules for the admin panel.
+// Singleton row (id fixed to "config") holding editable shipping rules for el admin panel.
+// Costo de envio por zona vive como constante en lib/shipping.ts (ejemplo,
+// no hay metodo de envio real definido todavia) — solo el monto de envio
+// gratis y el umbral de stock bajo son configurables por ahora.
 model ShippingConfig {
   id                    String @id @default("config")
-  freeShippingRadiusKm  Float  @default(5)
   freeShippingMinAmount Float  @default(50000)
-  baseShippingCost      Float  @default(2500)
   lowStockThreshold     Int    @default(5)
 }

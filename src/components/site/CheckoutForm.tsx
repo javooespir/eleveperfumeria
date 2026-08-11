@@ -2,20 +2,18 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useCartStore, cartSubtotal, cartCount } from "@/store/cart";
 import { useBuyerTypeStore } from "@/store/buyer-type";
 import { WHOLESALE_MIN_UNITS } from "@/lib/types";
-import { calcularEnvio, type ShippingRules } from "@/lib/shipping";
+import { calcularEnvio, SHIPPING_ZONES, type ShippingRules, type ShippingZone } from "@/lib/shipping";
 import { buildWhatsAppMessage, buildWhatsAppLink } from "@/lib/whatsapp";
+import { AddressAutocomplete } from "@/components/site/AddressAutocomplete";
 
 const money = (n: number) => `$${n.toLocaleString("es-AR")}`;
-
-// Distancias de prueba para el boceto — reemplazar por geocoding real luego.
-const TEST_DISTANCES = [2, 4, 6, 12, 20];
 
 export function CheckoutForm({ rules }: { rules: ShippingRules }) {
   const router = useRouter();
@@ -29,18 +27,18 @@ export function CheckoutForm({ rules }: { rules: ShippingRules }) {
   const [customerName, setCustomerName] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
-  const [distanceKm, setDistanceKm] = useState(4);
+  const [zone, setZone] = useState<ShippingZone | "">("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const shippingCost = useMemo(
-    () => calcularEnvio(distanceKm, subtotal, rules),
-    [distanceKm, subtotal, rules]
+    () => (zone ? calcularEnvio(zone, subtotal, rules) : 0),
+    [zone, subtotal, rules]
   );
   const total = subtotal + shippingCost;
 
   const canSubmit =
-    items.length > 0 && customerName && phone && address && !submitting && !belowWholesaleMin;
+    items.length > 0 && customerName && phone && address && zone && !submitting && !belowWholesaleMin;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -52,7 +50,7 @@ export function CheckoutForm({ rules }: { rules: ShippingRules }) {
       customerName,
       phone,
       address,
-      distanceKm,
+      zone,
       buyerType,
       items: items.map((i) => ({
         productId: i.productId,
@@ -103,15 +101,40 @@ export function CheckoutForm({ rules }: { rules: ShippingRules }) {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-      <div className="flex flex-col gap-3 border-b border-border pb-5">
-        {items.map((i) => (
-          <div key={i.productId} className="flex justify-between text-sm">
-            <span>
-              {i.name} x{i.qty}
-            </span>
-            <span>{money(i.unitPrice * i.qty)}</span>
+      <div className="rounded-lg border border-border overflow-hidden">
+        <div className="px-4 py-3 border-b border-border bg-muted/40">
+          <p className="text-sm font-medium">Resumen del pedido</p>
+        </div>
+
+        <div className="flex flex-col gap-4 p-4">
+          {items.map((i) => (
+            <div key={i.productId} className="flex items-center gap-3">
+              <div className="relative size-14 shrink-0 rounded-md overflow-hidden border border-border bg-muted">
+                <Image src={i.image} alt={i.name} fill sizes="56px" className="object-cover" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm truncate">{i.name}</p>
+                <p className="text-xs text-muted-foreground">x{i.qty}</p>
+              </div>
+              <p className="text-sm font-medium shrink-0">{money(i.unitPrice * i.qty)}</p>
+            </div>
+          ))}
+
+          <div className="flex flex-col gap-1 border-t border-border pt-3 text-sm">
+            <div className="flex justify-between">
+              <span>Subtotal</span>
+              <span>{money(subtotal)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Envío</span>
+              <span>{!zone ? "—" : shippingCost === 0 ? "Gratis" : money(shippingCost)}</span>
+            </div>
+            <div className="flex justify-between font-medium text-base mt-1">
+              <span>Total</span>
+              <span>{money(total)}</span>
+            </div>
           </div>
-        ))}
+        </div>
       </div>
 
       <div className="flex flex-col gap-1.5">
@@ -126,47 +149,27 @@ export function CheckoutForm({ rules }: { rules: ShippingRules }) {
 
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="direccion">Dirección</Label>
-        <Textarea id="direccion" value={address} onChange={(e) => setAddress(e.target.value)} required />
+        <AddressAutocomplete id="direccion" value={address} onChange={setAddress} />
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor="distancia">
-          Distancia al local (km) — {/* TODO: reemplazar por geocoding real */} valor de prueba
-        </Label>
-        <Input
-          id="distancia"
-          type="number"
-          min={0}
-          value={distanceKm}
-          onChange={(e) => setDistanceKm(Number(e.target.value))}
-        />
-        <div className="flex gap-2 mt-1 flex-wrap">
-          {TEST_DISTANCES.map((km) => (
-            <button
-              type="button"
-              key={km}
-              onClick={() => setDistanceKm(km)}
-              className="rounded-full border border-border px-3 py-1 text-xs"
-            >
-              {km} km
-            </button>
+        <Label htmlFor="zona">Zona de entrega</Label>
+        <select
+          id="zona"
+          value={zone}
+          onChange={(e) => setZone(e.target.value as ShippingZone)}
+          required
+          className="border border-input bg-background rounded-md px-3 py-2 text-sm h-9"
+        >
+          <option value="" disabled>
+            Elegí tu zona
+          </option>
+          {SHIPPING_ZONES.map((z) => (
+            <option key={z.value} value={z.value}>
+              {z.label}
+            </option>
           ))}
-        </div>
-      </div>
-
-      <div className="flex flex-col gap-1 border-t border-border pt-4 text-sm">
-        <div className="flex justify-between">
-          <span>Subtotal</span>
-          <span>{money(subtotal)}</span>
-        </div>
-        <div className="flex justify-between">
-          <span>Envío</span>
-          <span>{shippingCost === 0 ? "Gratis" : money(shippingCost)}</span>
-        </div>
-        <div className="flex justify-between font-medium text-base mt-1">
-          <span>Total</span>
-          <span>{money(total)}</span>
-        </div>
+        </select>
       </div>
 
       {error && (

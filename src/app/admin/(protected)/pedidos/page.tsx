@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { Card } from "@/components/ui/card";
+import { zoneLabel } from "@/lib/shipping";
 import { OrderStatusSelect } from "./OrderStatusSelect";
 
 const money = (n: number) => `$${n.toLocaleString("es-AR")}`;
@@ -48,6 +49,7 @@ export default async function PedidosPage() {
                       <p className="text-xs text-muted-foreground">
                         {o.phone} — {o.address}
                       </p>
+                      <p className="text-xs text-muted-foreground">{zoneLabel(o.zone)}</p>
                       <p className="text-xs text-muted-foreground mt-1">
                         {new Date(o.createdAt).toLocaleString("es-AR")}
                       </p>
