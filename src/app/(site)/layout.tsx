@@ -6,14 +6,16 @@ import { Footer } from "@/components/site/Footer";
 import { WholesaleReminder } from "@/components/site/WholesaleReminder";
 import { ScentQuiz } from "@/components/site/ScentQuiz";
 import { QUIZ_RESULTS } from "@/lib/quiz";
+import { getSiteContent } from "@/lib/site-content";
 import type { Product } from "@/lib/types";
 
 export default async function SiteLayout({ children }: { children: React.ReactNode }) {
   const quizProductNames = Object.values(QUIZ_RESULTS).map((r) => r.productName);
 
-  const [categories, quizProductsRaw] = await Promise.all([
+  const [categories, quizProductsRaw, content] = await Promise.all([
     prisma.category.findMany({ orderBy: { name: "asc" } }),
     prisma.product.findMany({ where: { name: { in: quizProductNames }, isActive: true } }),
+    getSiteContent(),
   ]);
 
   const quizProducts: Product[] = quizProductsRaw.map((p) => ({
@@ -34,7 +36,14 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
   return (
     <>
       <Header categories={categories} />
-      <AnnouncementBar />
+      <AnnouncementBar
+        messages={[
+          content.announcement_1,
+          content.announcement_2,
+          content.announcement_3,
+          content.announcement_4,
+        ]}
+      />
       <main className="flex-1">{children}</main>
       <Footer />
       <CartDrawer />

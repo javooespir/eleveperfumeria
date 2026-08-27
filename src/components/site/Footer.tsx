@@ -4,6 +4,7 @@ import Link from "next/link";
 import { motion, type Variants } from "framer-motion";
 import { Logo } from "@/components/site/Logo";
 import { useQuizStore } from "@/store/quiz";
+import { WHATSAPP_LINK } from "@/lib/whatsapp";
 
 // Adaptado de un footer de 21st.dev (framer-motion, stagger + hover pills +
 // franja diagonal animada). "motion/react" del original -> "framer-motion"
@@ -19,7 +20,7 @@ const SOCIALS = [
     href: "https://www.tiktok.com/@eleveimportados_ok",
     Icon: TikTokIcon,
   },
-  { name: "WhatsApp", href: "https://wa.me/5491170614454", Icon: WhatsAppIcon },
+  { name: "WhatsApp", href: WHATSAPP_LINK, Icon: WhatsAppIcon },
 ];
 
 function InstagramIcon({ className }: { className?: string }) {
@@ -109,7 +110,7 @@ export function Footer() {
             </span>
           </button>
           <a
-            href="https://wa.me/5491170614454"
+            href={WHATSAPP_LINK}
             target="_blank"
             rel="noopener noreferrer"
             className="relative px-2 py-1 group"

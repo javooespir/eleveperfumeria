@@ -1,9 +1,26 @@
 import { prisma } from "@/lib/prisma";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { zoneLabel } from "@/lib/shipping";
 import { OrderStatusSelect } from "./OrderStatusSelect";
+import { DeleteOrderButton } from "./DeleteOrderButton";
+
+export const dynamic = "force-dynamic";
 
 const money = (n: number) => `$${n.toLocaleString("es-AR")}`;
+
+// El estado ahora se ve como etiqueta en la tarjeta. Antes solo existia
+// dentro del desplegable, asi que cambiarlo no producia ningun cambio
+// visible y parecia que el boton no hacia nada.
+const STATUS_STYLE: Record<string, { label: string; className: string }> = {
+  PENDIENTE_CONFIRMACION: {
+    label: "Pendiente de confirmación",
+    className: "bg-amber-500/15 text-amber-700",
+  },
+  NUEVO: { label: "Nuevo", className: "bg-blue-500/15 text-blue-700" },
+  EN_PROCESO: { label: "En proceso", className: "bg-violet-500/15 text-violet-700" },
+  ENTREGADO: { label: "Entregado", className: "bg-emerald-500/15 text-emerald-700" },
+};
 
 export default async function PedidosPage() {
   const orders = await prisma.order.findMany({ orderBy: { createdAt: "desc" } });
@@ -23,6 +40,12 @@ export default async function PedidosPage() {
               qty: number;
               unitPrice: number;
             }[];
+            const totalUnits = items.reduce((sum, i) => sum + i.qty, 0);
+            const style = STATUS_STYLE[o.status] ?? {
+              label: o.status,
+              className: "bg-muted text-muted-foreground",
+            };
+
             return (
               <Card
                 key={o.id}
@@ -34,19 +57,19 @@ export default async function PedidosPage() {
               >
                 <div className="px-4">
                   <div className="flex items-start justify-between gap-4">
-                    <div>
-                      {o.status === "PENDIENTE_CONFIRMACION" && (
-                        <span className="inline-block mb-1 text-[10px] tracking-wide uppercase text-amber-700">
-                          Pendiente de confirmación
-                        </span>
-                      )}
-                      <p className="text-sm font-medium">
-                        {o.customerName}
-                        <span className="ml-2 text-xs font-normal text-muted-foreground">
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2 mb-1.5">
+                        <Badge className={`border-none ${style.className}`}>{style.label}</Badge>
+                        <Badge variant="outline" className="text-[10px]">
                           {o.buyerType === "mayorista" ? "Mayorista" : "Minorista"}
+                        </Badge>
+                        <span className="text-[10px] text-muted-foreground">
+                          {totalUnits} {totalUnits === 1 ? "unidad" : "unidades"}
                         </span>
-                      </p>
-                      <p className="text-xs text-muted-foreground">
+                      </div>
+
+                      <p className="text-sm font-medium">{o.customerName}</p>
+                      <p className="text-xs text-muted-foreground break-words">
                         {o.phone} — {o.address}
                       </p>
                       <p className="text-xs text-muted-foreground">{zoneLabel(o.zone)}</p>
@@ -54,7 +77,11 @@ export default async function PedidosPage() {
                         {new Date(o.createdAt).toLocaleString("es-AR")}
                       </p>
                     </div>
-                    <OrderStatusSelect id={o.id} status={o.status} />
+
+                    <div className="flex flex-col items-end gap-2 shrink-0">
+                      <OrderStatusSelect id={o.id} status={o.status} />
+                      <DeleteOrderButton id={o.id} customerName={o.customerName} />
+                    </div>
                   </div>
 
                   <div className="mt-3 text-sm flex flex-col gap-1">

@@ -5,7 +5,13 @@ import { BrandLogos } from "@/components/site/BrandLogos";
 import { LandingCta } from "@/components/site/LandingCta";
 import { ScentQuizCta } from "@/components/site/ScentQuizCta";
 import { WholesaleShowcase } from "@/components/site/WholesaleShowcase";
+import { getSiteContent } from "@/lib/site-content";
 import type { Product } from "@/lib/types";
+
+// La portada muestra stock, precios y textos que el cliente edita desde el
+// admin. Con prerenderizado estatico esos cambios no aparecian hasta el
+// siguiente deploy, asi que se renderiza por request.
+export const dynamic = "force-dynamic";
 
 function toProduct(p: {
   id: string;
@@ -38,7 +44,7 @@ function toProduct(p: {
 }
 
 export default async function LandingPage() {
-  const [trendingRaw, productCount, categoryCount] = await Promise.all([
+  const [trendingRaw, productCount, categoryCount, content] = await Promise.all([
     prisma.product.findMany({
       where: { isTrending: true, isActive: true },
       take: 8,
@@ -46,24 +52,30 @@ export default async function LandingPage() {
     }),
     prisma.product.count({ where: { isActive: true } }),
     prisma.category.count(),
+    getSiteContent(),
   ]);
 
   const trending = trendingRaw.map(toProduct);
 
   return (
     <>
-      <MarketingHero productCount={productCount} brandCount={5} categoryCount={categoryCount} />
+      <MarketingHero
+        productCount={productCount}
+        brandCount={5}
+        categoryCount={categoryCount}
+        content={content}
+      />
       {trending.length > 0 && (
         <ProductCarouselSection
-          title="Los más buscados"
+          title={content.trending_title}
           emoji="🔥"
           products={trending}
         />
       )}
-      <ScentQuizCta />
+      <ScentQuizCta content={content} />
       <WholesaleShowcase />
       <BrandLogos />
-      <LandingCta />
+      <LandingCta content={content} />
     </>
   );
 }

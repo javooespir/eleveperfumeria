@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/carousel";
 import { finalPrice, type Product } from "@/lib/types";
 import { useCartStore } from "@/store/cart";
-import { useBuyerTypeStore } from "@/store/buyer-type";
+import { useEffectiveBuyerType } from "@/store/use-effective-buyer-type";
 
 const money = (n: number) => `$${n.toLocaleString("es-AR")}`;
 
@@ -31,7 +31,7 @@ export function ProductModal({
 }) {
   const [qty, setQty] = useState(1);
   const addItem = useCartStore((s) => s.addItem);
-  const buyerType = useBuyerTypeStore((s) => s.buyerType) ?? "minorista";
+  const buyerType = useEffectiveBuyerType();
   const open = () => setQty(1);
 
   if (!product) return null;
@@ -121,7 +121,10 @@ export function ProductModal({
                 {
                   productId: product.id,
                   name: product.name,
-                  unitPrice: price,
+                  price: product.price,
+                  wholesalePrice: product.wholesalePrice,
+                  discountActive: product.discountActive,
+                  discountPercent: product.discountPercent,
                   image: product.images[0],
                   stock: product.stock,
                 },

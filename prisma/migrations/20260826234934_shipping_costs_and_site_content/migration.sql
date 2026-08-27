@@ -1,0 +1,14 @@
+-- AlterTable
+ALTER TABLE "ShippingConfig" ADD COLUMN     "costBuenosAires" DOUBLE PRECISION NOT NULL DEFAULT 3500,
+ADD COLUMN     "costCaba" DOUBLE PRECISION NOT NULL DEFAULT 2000,
+ADD COLUMN     "costOtrasProvincias" DOUBLE PRECISION NOT NULL DEFAULT 6000,
+ADD COLUMN     "costZonaOeste" DOUBLE PRECISION NOT NULL DEFAULT 2500;
+
+-- CreateTable
+CREATE TABLE "SiteContent" (
+    "key" TEXT NOT NULL,
+    "value" TEXT NOT NULL,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "SiteContent_pkey" PRIMARY KEY ("key")
+);

@@ -8,6 +8,7 @@ import { Sparkles, PackageCheck, Truck, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BrandMarquee } from "@/components/site/BrandMarquee";
 import { useQuizStore } from "@/store/quiz";
+import type { SiteContent } from "@/lib/site-content";
 
 const EASE_OUT = "cubic-bezier(0.23, 1, 0.32, 1)";
 
@@ -15,10 +16,12 @@ export function MarketingHero({
   productCount,
   brandCount,
   categoryCount,
+  content,
 }: {
   productCount: number;
   brandCount: number;
   categoryCount: number;
+  content: SiteContent;
 }) {
   const rootRef = useRef<HTMLElement>(null);
   const setQuizOpen = useQuizStore((s) => s.setOpen);
@@ -96,34 +99,33 @@ export function MarketingHero({
           <div className="lg:col-span-7 flex flex-col justify-center">
             <div className="hero-badge">
               <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[11px] uppercase tracking-wider text-background/80">
-                Perfumería de catálogo
+                {content.hero_badge}
                 <Sparkles className="size-3.5 text-champagne" />
               </span>
             </div>
 
             <h1 className="font-heading text-4xl sm:text-5xl lg:text-6xl font-medium tracking-tight leading-[1.03] mt-6">
-              <span className="hero-line block">¿Ya sabés cuál es</span>
-              <span className="hero-line block text-champagne">tu próximo perfume?</span>
+              <span className="hero-line block">{content.hero_title_1}</span>
+              <span className="hero-line block text-champagne">{content.hero_title_2}</span>
             </h1>
 
             <p
               className="hero-sub text-sm sm:text-base text-background/60 mt-6 max-w-md"
               style={{ textShadow: "0 1px 4px rgba(0,0,0,0.85)" }}
             >
-              Perfumes árabes y de diseñador, body splash y tubitos de muestra.
-              Envío a domicilio y coordinación directa por WhatsApp.
+              {content.hero_subtitle}
             </p>
 
             <div className="hero-cta flex flex-col sm:flex-row gap-3 mt-40 sm:mt-8">
               <Button asChild className="rounded-full bg-background text-foreground hover:bg-champagne px-7">
-                <Link href="/catalogo">Ver catálogo completo</Link>
+                <Link href="/catalogo">{content.hero_cta_primary}</Link>
               </Button>
               <Button
                 variant="outline"
                 className="rounded-full border-white/15 bg-white/5 text-background hover:bg-white/10 px-7"
                 onClick={() => setQuizOpen(true)}
               >
-                Encontrá tu perfume ideal
+                {content.hero_cta_secondary}
               </Button>
             </div>
           </div>
@@ -143,15 +145,15 @@ export function MarketingHero({
               <div className="flex flex-col gap-2.5 text-sm text-background/70 mb-6">
                 <div className="flex items-center gap-2.5">
                   <Truck className="size-4 text-champagne shrink-0" />
-                  Envío a domicilio
+                  {content.hero_benefit_1}
                 </div>
                 <div className="flex items-center gap-2.5">
                   <PackageCheck className="size-4 text-champagne shrink-0" />
-                  3 y 6 cuotas sin interés
+                  {content.hero_benefit_2}
                 </div>
                 <div className="flex items-center gap-2.5">
                   <MessageCircle className="size-4 text-champagne shrink-0" />
-                  Coordinación por WhatsApp
+                  {content.hero_benefit_3}
                 </div>
               </div>
 

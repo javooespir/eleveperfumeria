@@ -1,8 +1,18 @@
-import { Suspense } from "react";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { Catalog } from "@/components/site/Catalog";
 import type { Product } from "@/lib/types";
+
+// El catalogo refleja stock, precios, fotos y altas/bajas de productos que
+// el cliente cambia desde el admin. Prerenderizado quedaba congelado hasta
+// el proximo deploy (fotos nuevas y stock actualizado no aparecian).
+//
+// Ademas, al ser dinamica, <Catalog> ya no necesita el <Suspense> que pedia
+// useSearchParams() cuando la pagina era estatica. Ese boundary (sin
+// fallback) impedia que el subarbol hidratara: el catalogo se veia bien pero
+// no respondia a ningun click — ni filtros, ni "Agregar", ni el popup de
+// minorista/mayorista.
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Catálogo",
@@ -63,13 +73,7 @@ export default async function CatalogoPage() {
       <h1 className="px-4 sm:px-6 pt-8 text-2xl sm:text-3xl font-heading font-light">
         Catálogo de perfumes
       </h1>
-      {/* Suspense acotado solo al client component: usa useSearchParams(),
-          que requiere este boundary. Si envolviera tambien el h1/json-ld de
-          arriba, quedan afuera del HTML estatico (van solo en el payload RSC
-          para hidratacion) — invisibles para crawlers que no ejecutan JS. */}
-      <Suspense>
-        <Catalog products={products} categories={categories} />
-      </Suspense>
+      <Catalog products={products} categories={categories} />
     </>
   );
 }

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Package, Tags, ClipboardList, Truck, LayoutGrid, Menu } from "lucide-react";
+import { Package, Tags, ClipboardList, Truck, LayoutGrid, Menu, Type } from "lucide-react";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { redirect } from "next/navigation";
 import { Logo } from "@/components/site/Logo";
@@ -12,7 +12,8 @@ const NAV = [
   { href: "/admin/productos", label: "Productos", icon: Package },
   { href: "/admin/categorias", label: "Categorías", icon: Tags },
   { href: "/admin/pedidos", label: "Pedidos", icon: ClipboardList },
-  { href: "/admin/envio", label: "Envío", icon: Truck },
+  { href: "/admin/textos", label: "Textos", icon: Type },
+  { href: "/admin/envio", label: "Envío y stock", icon: Truck },
 ];
 
 export default async function AdminProtectedLayout({ children }: { children: React.ReactNode }) {

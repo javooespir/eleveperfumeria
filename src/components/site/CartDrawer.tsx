@@ -12,22 +12,27 @@ import {
   SheetClose,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { useCartStore, cartSubtotal, cartCount } from "@/store/cart";
+import { useCartStore, cartSubtotal, cartCount, itemUnitPrice } from "@/store/cart";
 import { useBuyerTypeStore } from "@/store/buyer-type";
+import { useEffectiveBuyerType } from "@/store/use-effective-buyer-type";
+import { useHydrated } from "@/store/use-hydrated";
 import { WHOLESALE_MIN_UNITS } from "@/lib/types";
 
 const money = (n: number) => `$${n.toLocaleString("es-AR")}`;
 
 export function CartDrawer() {
+  const hydrated = useHydrated();
   const isOpen = useCartStore((s) => s.isOpen);
   const close = useCartStore((s) => s.close);
-  const items = useCartStore((s) => s.items);
+  const storedItems = useCartStore((s) => s.items);
   const updateQty = useCartStore((s) => s.updateQty);
   const removeItem = useCartStore((s) => s.removeItem);
-  const subtotal = cartSubtotal(items);
-  const buyerType = useBuyerTypeStore((s) => s.buyerType);
+  const selectedBuyerType = useBuyerTypeStore((s) => s.buyerType);
+  const buyerType = useEffectiveBuyerType();
+  const items = hydrated ? storedItems : [];
+  const subtotal = cartSubtotal(items, buyerType);
   const count = cartCount(items);
-  const belowWholesaleMin = buyerType === "mayorista" && count < WHOLESALE_MIN_UNITS;
+  const belowWholesaleMin = selectedBuyerType === "mayorista" && count < WHOLESALE_MIN_UNITS;
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && close()}>
@@ -64,7 +69,9 @@ export function CartDrawer() {
                       <X className="size-4" />
                     </button>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-0.5">{money(item.unitPrice)}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {money(itemUnitPrice(item, buyerType))}
+                  </p>
                   <div className="flex items-center gap-2 mt-2">
                     <button
                       onClick={() => updateQty(item.productId, item.qty - 1)}
@@ -91,6 +98,11 @@ export function CartDrawer() {
 
         {items.length > 0 && (
           <SheetFooter className="border-t border-border">
+            {selectedBuyerType !== "mayorista" && buyerType === "mayorista" && (
+              <p className="text-xs text-center text-foreground bg-champagne/25 rounded-md py-2 px-3 mb-3">
+                Llegaste a {WHOLESALE_MIN_UNITS} unidades: se aplicó precio mayorista.
+              </p>
+            )}
             <div className="flex items-center justify-between text-sm mb-2">
               <span>Subtotal</span>
               <span className="font-medium">{money(subtotal)}</span>

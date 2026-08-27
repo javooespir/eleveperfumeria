@@ -1,36 +1,52 @@
-import type { CartItem } from "@/store/cart";
+import type { BuyerType } from "@/lib/types";
 
-// Numero placeholder para el boceto — reemplazar por el numero real del
-// cliente en NEXT_PUBLIC_WHATSAPP_NUMBER (.env) antes de producción.
-const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "5491100000000";
+// Unico numero de WhatsApp del negocio: pedidos y contacto del footer salen
+// de aca, para que cambiarlo sea un solo lugar (variable de entorno).
+export const WHATSAPP_NUMBER =
+  process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "5491138752317";
+
+export const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMBER}`;
 
 const money = (n: number) => `$${n.toLocaleString("es-AR")}`;
 
 export function buildWhatsAppMessage(params: {
-  items: CartItem[];
+  lines: { name: string; qty: number; unitPrice: number }[];
+  buyerType: BuyerType;
   subtotal: number;
   shippingCost: number;
   total: number;
   customerName: string;
   phone: string;
   address: string;
+  zone: string;
 }) {
-  const { items, subtotal, shippingCost, total, customerName, phone, address } = params;
+  const {
+    lines: orderLines,
+    buyerType,
+    subtotal,
+    shippingCost,
+    total,
+    customerName,
+    phone,
+    address,
+    zone,
+  } = params;
 
   const lines = [
     "Hola ELEVÉ! Quiero hacer este pedido:",
     "",
-    ...items.map(
+    ...orderLines.map(
       (i) => `• ${i.name} x${i.qty} — ${money(i.unitPrice)} c/u = ${money(i.unitPrice * i.qty)}`
     ),
     "",
-    `Subtotal: ${money(subtotal)}`,
+    `Subtotal: ${money(subtotal)}${buyerType === "mayorista" ? " (precio mayorista)" : ""}`,
     `Envío: ${shippingCost === 0 ? "Gratis" : money(shippingCost)}`,
     `Total: ${money(total)}`,
     "",
     `Nombre: ${customerName}`,
     `Teléfono: ${phone}`,
     `Dirección: ${address}`,
+    `Zona: ${zone}`,
   ];
 
   return lines.join("\n");

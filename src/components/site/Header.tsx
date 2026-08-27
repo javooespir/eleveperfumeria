@@ -12,16 +12,21 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { useCartStore, cartCount } from "@/store/cart";
+import { useHydrated } from "@/store/use-hydrated";
 import { useBuyerTypeStore } from "@/store/buyer-type";
 import { Logo } from "@/components/site/Logo";
 import type { Category } from "@/lib/types";
 
 export function Header({ categories }: { categories: Category[] }) {
+  const hydrated = useHydrated();
   const items = useCartStore((s) => s.items);
   const toggleCart = useCartStore((s) => s.toggle);
   const clearCart = useCartStore((s) => s.clear);
-  const count = cartCount(items);
-  const buyerType = useBuyerTypeStore((s) => s.buyerType);
+  // Hasta hidratar se muestra 0: el HTML del servidor no conoce el carrito
+  // guardado en el navegador.
+  const count = hydrated ? cartCount(items) : 0;
+  const storedBuyerType = useBuyerTypeStore((s) => s.buyerType);
+  const buyerType = hydrated ? storedBuyerType : null;
   const resetBuyerType = useBuyerTypeStore((s) => s.reset);
 
   const handleResetBuyerType = () => {

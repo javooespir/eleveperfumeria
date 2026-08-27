@@ -1,13 +1,25 @@
 import Link from "next/link";
-import { Package, Tags, ClipboardList, Truck, Clock, CheckCircle2, Wallet, AlertTriangle } from "lucide-react";
+import {
+  Package,
+  Tags,
+  ClipboardList,
+  Truck,
+  Type,
+  Clock,
+  CheckCircle2,
+  Wallet,
+  AlertTriangle,
+} from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { getStoreConfig } from "@/lib/config";
+
+export const dynamic = "force-dynamic";
 
 const money = (n: number) => `$${n.toLocaleString("es-AR")}`;
 
 const CONFIRMED_STATUSES = ["NUEVO", "EN_PROCESO", "ENTREGADO"] as const;
-const DEFAULT_LOW_STOCK_THRESHOLD = 5;
 
 export default async function AdminDashboard() {
   const startOfMonth = new Date();
@@ -36,10 +48,10 @@ export default async function AdminDashboard() {
       where: { status: { in: [...CONFIRMED_STATUSES] }, createdAt: { gte: startOfMonth } },
       _sum: { total: true },
     }),
-    prisma.shippingConfig.findUnique({ where: { id: "config" } }),
+    getStoreConfig(),
   ]);
 
-  const lowStockThreshold = config?.lowStockThreshold ?? DEFAULT_LOW_STOCK_THRESHOLD;
+  const lowStockThreshold = config.lowStockThreshold;
   const lowStockCount = await prisma.product.count({
     where: { stock: { lte: lowStockThreshold }, isActive: true },
   });
@@ -97,9 +109,16 @@ export default async function AdminDashboard() {
       alert: pendingCount > 0 ? `${pendingCount} por confirmar` : null,
     },
     {
+      href: "/admin/textos",
+      label: "Textos",
+      desc: "Editar lo que dice la página de inicio.",
+      icon: Type,
+      stat: null,
+    },
+    {
       href: "/admin/envio",
-      label: "Envío",
-      desc: "Configurar reglas de costo de envío.",
+      label: "Envío y stock",
+      desc: "Costo de envío por zona y aviso de stock bajo.",
       icon: Truck,
       stat: null,
     },

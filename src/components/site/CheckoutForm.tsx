@@ -6,10 +6,18 @@ import Image from "next/image";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { useCartStore, cartSubtotal, cartCount } from "@/store/cart";
+import { useCartStore, cartSubtotal, cartCount, itemUnitPrice } from "@/store/cart";
 import { useBuyerTypeStore } from "@/store/buyer-type";
+import { useEffectiveBuyerType } from "@/store/use-effective-buyer-type";
+import { useHydrated } from "@/store/use-hydrated";
 import { WHOLESALE_MIN_UNITS } from "@/lib/types";
-import { calcularEnvio, SHIPPING_ZONES, type ShippingRules, type ShippingZone } from "@/lib/shipping";
+import {
+  calcularEnvio,
+  zoneLabel,
+  SHIPPING_ZONES,
+  type ShippingRules,
+  type ShippingZone,
+} from "@/lib/shipping";
 import { buildWhatsAppMessage, buildWhatsAppLink } from "@/lib/whatsapp";
 import { AddressAutocomplete } from "@/components/site/AddressAutocomplete";
 
@@ -17,12 +25,15 @@ const money = (n: number) => `$${n.toLocaleString("es-AR")}`;
 
 export function CheckoutForm({ rules }: { rules: ShippingRules }) {
   const router = useRouter();
-  const items = useCartStore((s) => s.items);
+  const hydrated = useHydrated();
+  const storedItems = useCartStore((s) => s.items);
+  const items = hydrated ? storedItems : [];
   const clear = useCartStore((s) => s.clear);
-  const subtotal = cartSubtotal(items);
-  const buyerType = useBuyerTypeStore((s) => s.buyerType) ?? "minorista";
+  const selectedBuyerType = useBuyerTypeStore((s) => s.buyerType);
+  const buyerType = useEffectiveBuyerType();
+  const subtotal = cartSubtotal(items, buyerType);
   const count = cartCount(items);
-  const belowWholesaleMin = buyerType === "mayorista" && count < WHOLESALE_MIN_UNITS;
+  const belowWholesaleMin = selectedBuyerType === "mayorista" && count < WHOLESALE_MIN_UNITS;
 
   const [customerName, setCustomerName] = useState("");
   const [phone, setPhone] = useState("");
@@ -51,16 +62,18 @@ export function CheckoutForm({ rules }: { rules: ShippingRules }) {
       phone,
       address,
       zone,
-      buyerType,
-      items: items.map((i) => ({
-        productId: i.productId,
-        name: i.name,
-        qty: i.qty,
-        unitPrice: i.unitPrice,
-      })),
-      subtotal,
-      shippingCost,
-      total,
+      items: items.map((i) => ({ productId: i.productId, qty: i.qty })),
+    };
+
+    // El servidor recalcula precios y totales; se usan los suyos para el
+    // mensaje de WhatsApp asi el pedido guardado y el que le llega al
+    // negocio dicen exactamente lo mismo.
+    let confirmed: {
+      buyerType: "minorista" | "mayorista";
+      subtotal: number;
+      shippingCost: number;
+      total: number;
+      items: { name: string; qty: number; unitPrice: number }[];
     };
 
     try {
@@ -69,12 +82,13 @@ export function CheckoutForm({ rules }: { rules: ShippingRules }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
+      const data = await res.json().catch(() => null);
       if (!res.ok) {
-        const data = await res.json().catch(() => null);
         setError(data?.error ?? "No se pudo registrar el pedido. Probá de nuevo.");
         setSubmitting(false);
         return;
       }
+      confirmed = data;
     } catch {
       setError("No se pudo conectar. Probá de nuevo.");
       setSubmitting(false);
@@ -82,17 +96,25 @@ export function CheckoutForm({ rules }: { rules: ShippingRules }) {
     }
 
     const message = buildWhatsAppMessage({
-      items,
-      subtotal,
-      shippingCost,
-      total,
+      lines: confirmed.items,
+      buyerType: confirmed.buyerType,
+      subtotal: confirmed.subtotal,
+      shippingCost: confirmed.shippingCost,
+      total: confirmed.total,
       customerName,
       phone,
       address,
+      zone: zoneLabel(zone),
     });
     window.open(buildWhatsAppLink(message), "_blank");
     clear();
     router.push("/");
+  }
+
+  // Antes de hidratar todavia no se sabe si hay carrito guardado; mostrar
+  // "vacio" en ese momento seria mentirle al cliente.
+  if (!hydrated) {
+    return <p className="text-sm text-muted-foreground">Cargando tu pedido…</p>;
   }
 
   if (items.length === 0) {
@@ -102,8 +124,11 @@ export function CheckoutForm({ rules }: { rules: ShippingRules }) {
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-5">
       <div className="rounded-lg border border-border overflow-hidden">
-        <div className="px-4 py-3 border-b border-border bg-muted/40">
+        <div className="px-4 py-3 border-b border-border bg-muted/40 flex items-center justify-between gap-3">
           <p className="text-sm font-medium">Resumen del pedido</p>
+          <span className="text-[10px] uppercase tracking-wide text-muted-foreground">
+            {buyerType === "mayorista" ? "Precio mayorista" : "Precio minorista"}
+          </span>
         </div>
 
         <div className="flex flex-col gap-4 p-4">
@@ -116,7 +141,9 @@ export function CheckoutForm({ rules }: { rules: ShippingRules }) {
                 <p className="text-sm truncate">{i.name}</p>
                 <p className="text-xs text-muted-foreground">x{i.qty}</p>
               </div>
-              <p className="text-sm font-medium shrink-0">{money(i.unitPrice * i.qty)}</p>
+              <p className="text-sm font-medium shrink-0">
+                {money(itemUnitPrice(i, buyerType) * i.qty)}
+              </p>
             </div>
           ))}
 

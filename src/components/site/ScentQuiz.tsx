@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/compone
 import { Button } from "@/components/ui/button";
 import { useQuizStore } from "@/store/quiz";
 import { useCartStore } from "@/store/cart";
-import { useBuyerTypeStore } from "@/store/buyer-type";
+import { useEffectiveBuyerType } from "@/store/use-effective-buyer-type";
 import { QUIZ_QUESTIONS, QUIZ_RESULTS, scoreQuiz, type ScentFamily } from "@/lib/quiz";
 import { finalPrice, type Product } from "@/lib/types";
 
@@ -17,7 +17,7 @@ export function ScentQuiz({ products }: { products: Product[] }) {
   const open = useQuizStore((s) => s.open);
   const setOpen = useQuizStore((s) => s.setOpen);
   const addItem = useCartStore((s) => s.addItem);
-  const buyerType = useBuyerTypeStore((s) => s.buyerType) ?? "minorista";
+  const buyerType = useEffectiveBuyerType();
 
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<ScentFamily[]>([]);
@@ -105,7 +105,10 @@ export function ScentQuiz({ products }: { products: Product[] }) {
                     {
                       productId: product.id,
                       name: product.name,
-                      unitPrice: finalPrice(product, buyerType),
+                      price: product.price,
+                      wholesalePrice: product.wholesalePrice,
+                      discountActive: product.discountActive,
+                      discountPercent: product.discountPercent,
                       image: product.images[0],
                       stock: product.stock,
                     },

@@ -1,5 +1,7 @@
 "use client";
 
+import { useTransition } from "react";
+import { Loader2 } from "lucide-react";
 import { updateOrderStatus, confirmOrderPayment } from "../actions";
 
 const STATUSES = [
@@ -10,26 +12,44 @@ const STATUSES = [
 ];
 
 export function OrderStatusSelect({ id, status }: { id: string; status: string }) {
+  // useTransition da feedback de "guardando": antes el cambio se escribia en
+  // la base pero en pantalla no pasaba nada visible, asi que parecia roto.
+  const [isPending, startTransition] = useTransition();
+
   return (
     <div className="flex items-center gap-2">
       {status === "PENDIENTE_CONFIRMACION" && (
-        <form action={confirmOrderPayment}>
-          <input type="hidden" name="id" value={id} />
-          <button
-            type="submit"
-            className="rounded-md bg-foreground text-background px-3 py-1.5 text-xs font-medium hover:opacity-90 transition-opacity"
-          >
-            Confirmar pago
-          </button>
-        </form>
+        <button
+          type="submit"
+          onClick={() =>
+            startTransition(async () => {
+              const fd = new FormData();
+              fd.set("id", id);
+              await confirmOrderPayment(fd);
+            })
+          }
+          className="rounded-md bg-foreground text-background px-3 py-1.5 text-xs font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
+          disabled={isPending}
+        >
+          Confirmar pago
+        </button>
       )}
-      <form action={updateOrderStatus} className="flex items-center gap-2">
-        <input type="hidden" name="id" value={id} />
+
+      <div className="flex items-center gap-1.5">
+        {isPending && <Loader2 className="size-3.5 animate-spin text-muted-foreground" />}
         <select
-          name="status"
-          defaultValue={status}
-          onChange={(e) => e.currentTarget.form?.requestSubmit()}
-          className="rounded-md border border-input bg-background px-2 py-1.5 text-xs"
+          value={status}
+          disabled={isPending}
+          onChange={(e) => {
+            const next = e.target.value;
+            startTransition(async () => {
+              const fd = new FormData();
+              fd.set("id", id);
+              fd.set("status", next);
+              await updateOrderStatus(fd);
+            });
+          }}
+          className="rounded-md border border-input bg-background px-2 py-1.5 text-xs disabled:opacity-50"
         >
           {STATUSES.map((s) => (
             <option key={s.value} value={s.value}>
@@ -37,7 +57,7 @@ export function OrderStatusSelect({ id, status }: { id: string; status: string }
             </option>
           ))}
         </select>
-      </form>
+      </div>
     </div>
   );
 }

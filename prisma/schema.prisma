@@ -61,12 +61,22 @@ enum OrderStatus {
   ENTREGADO
 }
 
-// Singleton row (id fixed to "config") holding editable shipping rules for el admin panel.
-// Costo de envio por zona vive como constante en lib/shipping.ts (ejemplo,
-// no hay metodo de envio real definido todavia) — solo el monto de envio
-// gratis y el umbral de stock bajo son configurables por ahora.
+// Singleton row (id fixed to "config") con las reglas editables desde el admin.
 model ShippingConfig {
   id                    String @id @default("config")
   freeShippingMinAmount Float  @default(50000)
   lowStockThreshold     Int    @default(5)
+  costCaba              Float  @default(2000)
+  costZonaOeste         Float  @default(2500)
+  costBuenosAires       Float  @default(3500)
+  costOtrasProvincias   Float  @default(6000)
+}
+
+// Textos editables de la landing, como key-value. La key es un id estable
+// definido en lib/site-content.ts; si falta la fila se usa el texto por
+// defecto de ese archivo, asi que agregar textos nuevos no rompe nada.
+model SiteContent {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
 }
