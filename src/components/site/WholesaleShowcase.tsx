@@ -263,6 +263,12 @@ export function WholesaleShowcase() {
           transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
           className="absolute inset-0"
         />
+        {/* El glow radial de arriba llega hasta el borde superior (centrado
+            al 50% de alto, radio 55%), asi que se notaba un salto de color
+            contra la seccion de arriba (negro plano, sin glow). Esta franja
+            fuerza negro puro justo en el borde, tape el glow ahi y lo deja
+            visible recien mas abajo. */}
+        <div className="absolute inset-x-0 top-0 h-32 sm:h-40 bg-gradient-to-b from-ink to-transparent" />
       </div>
 
       <div className="relative z-10 mx-auto max-w-6xl px-4 sm:px-6">
