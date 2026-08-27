@@ -252,7 +252,7 @@ export function WholesaleShowcase() {
   const isRetail = mode === "retail";
 
   return (
-    <section className="relative w-full bg-[#0b0b0c] text-background overflow-hidden py-16 sm:py-24">
+    <section className="relative w-full bg-ink text-background overflow-hidden py-16 sm:py-24">
       <div className="absolute inset-0 pointer-events-none">
         <motion.div
           animate={{

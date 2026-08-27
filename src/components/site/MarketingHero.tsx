@@ -45,7 +45,7 @@ export function MarketingHero({
   return (
     <section
       ref={rootRef}
-      className="relative w-full min-h-[92svh] lg:min-h-0 bg-[#0b0b0c] text-background overflow-hidden"
+      className="relative w-full min-h-[92svh] lg:min-h-0 bg-ink text-background overflow-hidden"
     >
       {/* En mobile la foto ocupa solo la franja del titulo — abajo (donde
           esta la card de stats) queda negro solido, para que la card nunca
@@ -72,7 +72,7 @@ export function MarketingHero({
           className="object-cover opacity-90"
         />
       </div>
-      <div className="absolute inset-x-0 top-0 h-[60vh] lg:hidden bg-gradient-to-t from-[#0b0b0c]/35 via-[#0b0b0c]/5 to-[#0b0b0c]/60" />
+      <div className="absolute inset-x-0 top-0 h-[60vh] lg:hidden bg-gradient-to-t from-ink/35 via-ink/5 to-ink/60" />
 
       {/* Desktop: layout de 2 columnas lado a lado, sin problema de
           apilado — la foto cubre toda la seccion. */}
@@ -92,7 +92,7 @@ export function MarketingHero({
           className="object-cover opacity-60"
         />
       </div>
-      <div className="hidden lg:block absolute inset-0 bg-gradient-to-t from-[#0b0b0c] via-[#0b0b0c]/40 to-[#0b0b0c]/70" />
+      <div className="hidden lg:block absolute inset-0 bg-gradient-to-t from-ink via-ink/40 to-ink/70" />
 
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-6 pb-14 sm:pt-20 sm:pb-20">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-start">

@@ -8,7 +8,7 @@ import type { SiteContent } from "@/lib/site-content";
 // que se saco en vez de seguir peleando con la animacion.
 export function ScentQuizCta({ content }: { content: SiteContent }) {
   return (
-    <section className="relative bg-foreground text-background py-20 sm:py-28">
+    <section className="relative bg-ink text-background py-20 sm:py-28">
       <div className="relative z-10 mx-auto max-w-2xl text-center px-4 sm:px-6">
         <span className="text-xs tracking-[0.25em] text-champagne uppercase">
           {content.quiz_eyebrow}
