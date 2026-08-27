@@ -53,3 +53,6 @@ dev.db-journal
 .agents/
 .windsurf/
 skills-lock.json
+
+# scripts temporales de QA
+_qa_*.ts
