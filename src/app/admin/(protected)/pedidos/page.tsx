@@ -70,9 +70,13 @@ export default async function PedidosPage() {
 
                       <p className="text-sm font-medium">{o.customerName}</p>
                       <p className="text-xs text-muted-foreground break-words">
-                        {o.phone} — {o.address}
+                        {o.phone}
                       </p>
-                      <p className="text-xs text-muted-foreground">{zoneLabel(o.zone)}</p>
+                      <p className="text-xs text-muted-foreground break-words">{o.address}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {zoneLabel(o.zone)}
+                        {o.postalCode ? ` · CP ${o.postalCode}` : ""}
+                      </p>
                       <p className="text-xs text-muted-foreground mt-1">
                         {new Date(o.createdAt).toLocaleString("es-AR")}
                       </p>

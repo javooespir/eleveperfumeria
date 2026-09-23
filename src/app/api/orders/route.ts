@@ -4,15 +4,19 @@ import { prisma } from "@/lib/prisma";
 import { getStoreConfig } from "@/lib/config";
 import { calcularEnvio, SHIPPING_ZONES, type ShippingZone } from "@/lib/shipping";
 import { effectiveBuyerType, finalPrice } from "@/lib/types";
+import { formatAddress, validateAddress } from "@/lib/address";
 
 type IncomingItem = { productId: string; qty: number };
 
 export async function POST(request: Request) {
   const body = await request.json();
-  const { customerName, phone, address, zone, items } = body as {
+  const { customerName, phone, street, addressExtra, locality, postalCode, zone, items } = body as {
     customerName?: string;
     phone?: string;
-    address?: string;
+    street?: string;
+    addressExtra?: string;
+    locality?: string;
+    postalCode?: string;
     zone?: string;
     items?: IncomingItem[];
   };
@@ -21,14 +25,24 @@ export async function POST(request: Request) {
   // vacios, que despues no se pueden contactar.
   const name = String(customerName ?? "").trim();
   const phoneClean = String(phone ?? "").trim();
-  const addressClean = String(address ?? "").trim();
 
-  if (name.length < 2 || phoneClean.replace(/\D/g, "").length < 6 || addressClean.length < 5) {
-    return NextResponse.json(
-      { error: "Completá nombre, teléfono y dirección válidos." },
-      { status: 400 }
-    );
+  const parts = {
+    street: String(street ?? "").trim(),
+    extra: String(addressExtra ?? "").trim(),
+    locality: String(locality ?? "").trim(),
+    postalCode: String(postalCode ?? "").trim(),
+  };
+
+  if (name.length < 2 || phoneClean.replace(/\D/g, "").length < 6) {
+    return NextResponse.json({ error: "Completá nombre y teléfono válidos." }, { status: 400 });
   }
+
+  // La direccion se revalida en el servidor: el navegador puede saltearse
+  // los `required` del formulario.
+  const addressError = validateAddress(parts);
+  if (addressError) return NextResponse.json({ error: addressError }, { status: 400 });
+
+  const addressClean = formatAddress(parts);
 
   if (!SHIPPING_ZONES.some((z) => z.value === zone)) {
     return NextResponse.json({ error: "Elegí una zona de entrega." }, { status: 400 });
@@ -38,6 +52,13 @@ export async function POST(request: Request) {
   if (cartItems.length === 0) {
     return NextResponse.json({ error: "El carrito está vacío." }, { status: 400 });
   }
+
+  // La config se lee ANTES de abrir la transaccion. Leerla adentro usaba el
+  // cliente global (no `tx`), asi que pedia una segunda conexion mientras la
+  // transaccion tenia tomada la del pool: contra el pooler de Supabase eso
+  // termina en "Unable to start a transaction in the given time" y el pedido
+  // se perdia con un error 500.
+  const config = await getStoreConfig();
 
   try {
     const order = await prisma.$transaction(async (tx) => {
@@ -75,7 +96,6 @@ export async function POST(request: Request) {
         });
       }
 
-      const config = await getStoreConfig();
       const subtotal = lines.reduce((sum, l) => sum + l.unitPrice * l.qty, 0);
       const shippingCost = calcularEnvio(zone as ShippingZone, subtotal, config);
 
@@ -84,6 +104,10 @@ export async function POST(request: Request) {
           customerName: name,
           phone: phoneClean,
           address: addressClean,
+          street: parts.street,
+          addressExtra: parts.extra || null,
+          locality: parts.locality,
+          postalCode: parts.postalCode,
           zone: zone as string,
           buyerType,
           itemsJson: JSON.stringify(lines),

@@ -3,11 +3,15 @@ import { defaultShippingRules, type ShippingRules } from "@/lib/shipping";
 
 export const LOW_STOCK_THRESHOLD_DEFAULT = 5;
 
-export type StoreConfig = ShippingRules & { lowStockThreshold: number };
+export type StoreConfig = ShippingRules & {
+  lowStockThreshold: number;
+  metaPixelId: string | null;
+};
 
 const FALLBACK: StoreConfig = {
   ...defaultShippingRules,
   lowStockThreshold: LOW_STOCK_THRESHOLD_DEFAULT,
+  metaPixelId: null,
 };
 
 /** Config del negocio (envio + stock). Si no hay fila todavia, devuelve los defaults. */
@@ -21,5 +25,6 @@ export async function getStoreConfig(): Promise<StoreConfig> {
     costBuenosAires: config.costBuenosAires,
     costOtrasProvincias: config.costOtrasProvincias,
     lowStockThreshold: config.lowStockThreshold,
+    metaPixelId: config.metaPixelId?.trim() || null,
   };
 }

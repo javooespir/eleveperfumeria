@@ -5,6 +5,7 @@ import {
   ClipboardList,
   Truck,
   Type,
+  Megaphone,
   Clock,
   CheckCircle2,
   Wallet,
@@ -120,6 +121,13 @@ export default async function AdminDashboard() {
       label: "Envío y stock",
       desc: "Costo de envío por zona y aviso de stock bajo.",
       icon: Truck,
+      stat: null,
+    },
+    {
+      href: "/admin/integraciones",
+      label: "Integraciones",
+      desc: "Pixel de Meta para Facebook e Instagram Ads.",
+      icon: Megaphone,
       stat: null,
     },
   ];

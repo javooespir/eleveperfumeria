@@ -178,6 +178,24 @@ export async function updateShippingConfig(formData: FormData) {
   revalidateStorefront();
 }
 
+// ---- Integraciones ----
+
+export async function updateIntegrations(formData: FormData) {
+  // Solo digitos: el ID del pixel es numerico y la gente suele pegar la linea
+  // entera del script de Meta.
+  const raw = String(formData.get("metaPixelId") ?? "").replace(/\D/g, "");
+  const metaPixelId = raw || null;
+
+  await prisma.shippingConfig.upsert({
+    where: { id: "config" },
+    update: { metaPixelId },
+    create: { id: "config", metaPixelId },
+  });
+
+  revalidatePath("/admin/integraciones");
+  revalidateStorefront();
+}
+
 // ---- Textos de la landing ----
 
 export async function updateSiteContent(formData: FormData) {

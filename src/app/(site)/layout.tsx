@@ -7,15 +7,18 @@ import { WholesaleReminder } from "@/components/site/WholesaleReminder";
 import { ScentQuiz } from "@/components/site/ScentQuiz";
 import { QUIZ_RESULTS } from "@/lib/quiz";
 import { getSiteContent } from "@/lib/site-content";
+import { getStoreConfig } from "@/lib/config";
+import { MetaPixel } from "@/components/site/MetaPixel";
 import type { Product } from "@/lib/types";
 
 export default async function SiteLayout({ children }: { children: React.ReactNode }) {
   const quizProductNames = Object.values(QUIZ_RESULTS).map((r) => r.productName);
 
-  const [categories, quizProductsRaw, content] = await Promise.all([
+  const [categories, quizProductsRaw, content, config] = await Promise.all([
     prisma.category.findMany({ orderBy: { name: "asc" } }),
     prisma.product.findMany({ where: { name: { in: quizProductNames }, isActive: true } }),
     getSiteContent(),
+    getStoreConfig(),
   ]);
 
   const quizProducts: Product[] = quizProductsRaw.map((p) => ({
@@ -35,6 +38,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
 
   return (
     <>
+      <MetaPixel pixelId={config.metaPixelId} />
       <Header categories={categories} />
       <AnnouncementBar
         messages={[

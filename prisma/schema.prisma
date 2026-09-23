@@ -43,7 +43,15 @@ model Order {
   id          String      @id @default(cuid())
   customerName  String
   phone       String
+  // address guarda la direccion completa ya armada (para mostrar y para el
+  // mensaje de WhatsApp). Los campos sueltos quedan aparte porque el barrio
+  // y el codigo postal los escribe el cliente: antes los completaba el
+  // buscador y metia datos equivocados.
   address     String
+  street      String?     // calle y altura
+  addressExtra String?    // piso / depto
+  locality    String?     // localidad o barrio
+  postalCode  String?
   zone        String      // "caba" | "zona_oeste" | "buenos_aires" | "otras_provincias"
   buyerType   String      @default("minorista") // "minorista" | "mayorista"
   itemsJson   String      // JSON-encoded array of {productId, name, qty, unitPrice}
@@ -70,6 +78,9 @@ model ShippingConfig {
   costZonaOeste         Float  @default(2500)
   costBuenosAires       Float  @default(3500)
   costOtrasProvincias   Float  @default(6000)
+  // ID del pixel de Meta (Facebook/Instagram Ads). Vacio = no se carga
+  // ningun script de seguimiento.
+  metaPixelId           String?
 }
 
 // Textos editables de la landing, como key-value. La key es un id estable

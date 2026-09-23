@@ -49,6 +49,11 @@ export function Header({ categories }: { categories: Category[] }) {
             </SheetHeader>
             <nav className="flex flex-col p-4 gap-1">
               <SheetClose asChild>
+                <Link href="/" className="py-2.5 text-sm">
+                  Inicio
+                </Link>
+              </SheetClose>
+              <SheetClose asChild>
                 <Link href="/catalogo" className="py-2.5 text-sm">
                   Todo el catálogo
                 </Link>
@@ -88,6 +93,12 @@ export function Header({ categories }: { categories: Category[] }) {
               <span className="underline">cambiar</span>
             </button>
           )}
+          <Link
+            href="/"
+            className="hidden sm:inline text-sm text-muted-foreground hover:text-foreground"
+          >
+            Inicio
+          </Link>
           <Link
             href="/catalogo"
             className="hidden sm:inline text-sm text-muted-foreground hover:text-foreground"

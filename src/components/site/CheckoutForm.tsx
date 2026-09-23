@@ -19,7 +19,9 @@ import {
   type ShippingZone,
 } from "@/lib/shipping";
 import { buildWhatsAppMessage, buildWhatsAppLink } from "@/lib/whatsapp";
-import { AddressAutocomplete } from "@/components/site/AddressAutocomplete";
+import { AddressFields } from "@/components/site/AddressFields";
+import { trackPixel } from "@/components/site/MetaPixel";
+import { emptyAddress, formatAddress, validateAddress, type AddressParts } from "@/lib/address";
 
 const money = (n: number) => `$${n.toLocaleString("es-AR")}`;
 
@@ -37,7 +39,7 @@ export function CheckoutForm({ rules }: { rules: ShippingRules }) {
 
   const [customerName, setCustomerName] = useState("");
   const [phone, setPhone] = useState("");
-  const [address, setAddress] = useState("");
+  const [address, setAddress] = useState<AddressParts>(emptyAddress);
   const [zone, setZone] = useState<ShippingZone | "">("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -49,18 +51,34 @@ export function CheckoutForm({ rules }: { rules: ShippingRules }) {
   const total = subtotal + shippingCost;
 
   const canSubmit =
-    items.length > 0 && customerName && phone && address && zone && !submitting && !belowWholesaleMin;
+    items.length > 0 &&
+    customerName &&
+    phone &&
+    address.street &&
+    zone &&
+    !submitting &&
+    !belowWholesaleMin;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!canSubmit) return;
+
+    const addressError = validateAddress(address);
+    if (addressError) {
+      setError(addressError);
+      return;
+    }
+
     setSubmitting(true);
     setError(null);
 
     const payload = {
       customerName,
       phone,
-      address,
+      street: address.street,
+      addressExtra: address.extra,
+      locality: address.locality,
+      postalCode: address.postalCode,
       zone,
       items: items.map((i) => ({ productId: i.productId, qty: i.qty })),
     };
@@ -95,6 +113,9 @@ export function CheckoutForm({ rules }: { rules: ShippingRules }) {
       return;
     }
 
+    // El pedido ya quedo guardado: recien ahi cuenta como conversion.
+    trackPixel("Purchase", { value: confirmed.total, currency: "ARS" });
+
     const message = buildWhatsAppMessage({
       lines: confirmed.items,
       buyerType: confirmed.buyerType,
@@ -103,7 +124,7 @@ export function CheckoutForm({ rules }: { rules: ShippingRules }) {
       total: confirmed.total,
       customerName,
       phone,
-      address,
+      address: formatAddress(address),
       zone: zoneLabel(zone),
     });
     window.open(buildWhatsAppLink(message), "_blank");
@@ -166,18 +187,31 @@ export function CheckoutForm({ rules }: { rules: ShippingRules }) {
 
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="nombre">Nombre</Label>
-        <Input id="nombre" value={customerName} onChange={(e) => setCustomerName(e.target.value)} required />
+        {/* h-11 = 44px: los campos por defecto miden 32px, muy chicos para
+            tocar con el dedo. Casi todo el trafico del checkout es de celular. */}
+        <Input
+          id="nombre"
+          className="h-11"
+          value={customerName}
+          onChange={(e) => setCustomerName(e.target.value)}
+          required
+        />
       </div>
 
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="telefono">Teléfono</Label>
-        <Input id="telefono" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} required />
+        <Input
+          id="telefono"
+          type="tel"
+          inputMode="tel"
+          className="h-11"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          required
+        />
       </div>
 
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="direccion">Dirección</Label>
-        <AddressAutocomplete id="direccion" value={address} onChange={setAddress} />
-      </div>
+      <AddressFields value={address} onChange={setAddress} />
 
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="zona">Zona de entrega</Label>
@@ -186,7 +220,7 @@ export function CheckoutForm({ rules }: { rules: ShippingRules }) {
           value={zone}
           onChange={(e) => setZone(e.target.value as ShippingZone)}
           required
-          className="border border-input bg-background rounded-md px-3 py-2 text-sm h-9"
+          className="border border-input bg-background rounded-md px-3 py-2 text-sm h-11"
         >
           <option value="" disabled>
             Elegí tu zona
@@ -210,7 +244,7 @@ export function CheckoutForm({ rules }: { rules: ShippingRules }) {
         </p>
       )}
 
-      <Button type="submit" className="w-full rounded-none" disabled={!canSubmit}>
+      <Button type="submit" className="w-full rounded-none h-12 text-base" disabled={!canSubmit}>
         Enviar pedido por WhatsApp
       </Button>
     </form>
