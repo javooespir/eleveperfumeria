@@ -4,7 +4,6 @@ import { ProductCarouselSection } from "@/components/site/ProductCarouselSection
 import { BrandLogos } from "@/components/site/BrandLogos";
 import { LandingCta } from "@/components/site/LandingCta";
 import { ScentQuizCta } from "@/components/site/ScentQuizCta";
-import { WholesaleShowcase } from "@/components/site/WholesaleShowcase";
 import { getSiteContent } from "@/lib/site-content";
 import type { Product } from "@/lib/types";
 
@@ -73,7 +72,6 @@ export default async function LandingPage() {
         />
       )}
       <ScentQuizCta content={content} />
-      <WholesaleShowcase />
       <BrandLogos />
       <LandingCta content={content} />
     </>

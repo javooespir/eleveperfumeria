@@ -1,4 +1,13 @@
 import { prisma } from "@/lib/prisma";
+import {
+  QUIZ_DEFAULTS,
+  QUIZ_DEFAULT_BLURBS,
+  SCENT_FAMILIES,
+  quizBlurbKey,
+  quizOptionKey,
+  quizProductKey,
+  quizQuestionKey,
+} from "@/lib/quiz";
 
 // Textos editables desde /admin/textos. Cada entrada define su valor por
 // defecto: si la fila no existe en la DB se usa este texto, asi que sumar
@@ -124,10 +133,49 @@ export const CONTENT_FIELDS: ContentField[] = [
   },
 ];
 
+/**
+ * Campos del quiz. Viven aparte de CONTENT_FIELDS para que la pantalla de
+ * "Textos" no se llene con las 24 filas del quiz: se editan en /admin/quiz.
+ */
+export const QUIZ_TEXT_FIELDS: ContentField[] = [
+  ...QUIZ_DEFAULTS.flatMap((q, i) => [
+    {
+      key: quizQuestionKey(i),
+      label: `Pregunta ${i + 1}`,
+      group: `Pregunta ${i + 1}`,
+      default: q.question,
+    },
+    ...SCENT_FAMILIES.map((f) => ({
+      key: quizOptionKey(i, f.value),
+      label: `Opción — perfil ${f.label}`,
+      group: `Pregunta ${i + 1}`,
+      default: q.options[f.value],
+    })),
+  ]),
+  ...SCENT_FAMILIES.map((f) => ({
+    key: quizBlurbKey(f.value),
+    label: `Descripción del perfil ${f.label}`,
+    group: "Resultados",
+    multiline: true,
+    default: QUIZ_DEFAULT_BLURBS[f.value],
+  })),
+];
+
+/** Producto recomendado por perfil. Vacio = todavia sin elegir. */
+export const QUIZ_PRODUCT_FIELDS: ContentField[] = SCENT_FAMILIES.map((f) => ({
+  key: quizProductKey(f.value),
+  label: `Perfume para el perfil ${f.label}`,
+  group: "Resultados",
+  default: "",
+}));
+
 export type SiteContent = Record<string, string>;
 
 const DEFAULTS: SiteContent = Object.fromEntries(
-  CONTENT_FIELDS.map((f) => [f.key, f.default])
+  [...CONTENT_FIELDS, ...QUIZ_TEXT_FIELDS, ...QUIZ_PRODUCT_FIELDS].map((f) => [
+    f.key,
+    f.default,
+  ])
 );
 
 /** Lee los textos de la DB y completa con los defaults los que falten. */

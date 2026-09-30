@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { ScentQuizCtaButton } from "./ScentQuizCtaButton";
 import type { SiteContent } from "@/lib/site-content";
 
@@ -24,14 +23,8 @@ export function ScentQuizCta({ content }: { content: SiteContent }) {
           {content.quiz_subtitle}
         </p>
 
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-8">
+        <div className="flex justify-center mt-8">
           <ScentQuizCtaButton />
-          <Link
-            href="/catalogo?categoria=tubitos-arabes"
-            className="inline-flex items-center justify-center rounded-none px-4 py-2 text-sm text-background hover:bg-background/10 transition-colors"
-          >
-            Ver tubitos de muestra
-          </Link>
         </div>
       </div>
     </section>

@@ -1,99 +1,115 @@
 export type ScentFamily = "dulce" | "amaderado" | "floral" | "fresco" | "oriental";
 
+/** Los 5 perfiles del quiz. El orden define el de las opciones en pantalla. */
+export const SCENT_FAMILIES: { value: ScentFamily; label: string }[] = [
+  { value: "dulce", label: "Dulce" },
+  { value: "amaderado", label: "Amaderado" },
+  { value: "floral", label: "Floral" },
+  { value: "fresco", label: "Fresco" },
+  { value: "oriental", label: "Oriental" },
+];
+
+export const QUIZ_QUESTION_COUNT = 4;
+
+/**
+ * Textos por defecto. El cliente los edita desde /admin/quiz; lo que se
+ * guarda en la base pisa estos valores, y si falta alguno se usa el de aca.
+ */
+export const QUIZ_DEFAULTS: {
+  question: string;
+  options: Record<ScentFamily, string>;
+}[] = [
+  {
+    question: "¿Qué te describe mejor hoy?",
+    options: {
+      dulce: "Dulce y goloso/a",
+      amaderado: "Intenso y misterioso/a",
+      floral: "Romántico/a y elegante",
+      fresco: "Activo/a y fresco/a",
+      oriental: "Magnético/a y lujoso/a",
+    },
+  },
+  {
+    question: "Elegí la nota que más te atrae",
+    options: {
+      dulce: "Vainilla y caramelo",
+      amaderado: "Cuero y vetiver",
+      floral: "Jazmín y rosa",
+      fresco: "Cítricos y bergamota",
+      oriental: "Ámbar y azafrán",
+    },
+  },
+  {
+    question: "¿Para qué momento lo vas a usar más?",
+    options: {
+      dulce: "Un mimo para vos",
+      amaderado: "Una salida de noche",
+      floral: "Una cita especial",
+      fresco: "El día a día",
+      oriental: "Un evento importante",
+    },
+  },
+  {
+    question: "Elegí un color",
+    options: {
+      dulce: "Rosa pastel",
+      amaderado: "Marrón tierra",
+      floral: "Blanco cálido",
+      fresco: "Celeste",
+      oriental: "Dorado",
+    },
+  },
+];
+
+export const QUIZ_DEFAULT_BLURBS: Record<ScentFamily, string> = {
+  dulce: "Gourmand y dulce: caramelo, vainilla y praliné sobre un fondo de almizcle.",
+  amaderado: "Cálido y especiado: pimienta, cacao y vetiver sobre ámbar y vainilla.",
+  floral: "Floral elegante: durazno y bergamota, corazón de rosa y jazmín.",
+  fresco: "Fresco y vibrante: cítricos y grosellas con un fondo amaderado.",
+  oriental: "Oriental y magnético: azahar, especias y azafrán sobre ámbar y cedro.",
+};
+
+// ---- Claves de configuracion (se guardan en SiteContent) ----
+
+export const quizQuestionKey = (i: number) => `quiz_q${i + 1}_title`;
+export const quizOptionKey = (i: number, family: ScentFamily) => `quiz_q${i + 1}_${family}`;
+export const quizProductKey = (family: ScentFamily) => `quiz_result_${family}_product`;
+export const quizBlurbKey = (family: ScentFamily) => `quiz_result_${family}_blurb`;
+
 export type QuizQuestion = {
   question: string;
   options: { label: string; family: ScentFamily }[];
 };
 
-export const QUIZ_QUESTIONS: QuizQuestion[] = [
-  {
-    question: "¿Qué te describe mejor hoy?",
-    options: [
-      { label: "Dulce y goloso/a", family: "dulce" },
-      { label: "Intenso y misterioso/a", family: "amaderado" },
-      { label: "Romántico/a y elegante", family: "floral" },
-      { label: "Activo/a y fresco/a", family: "fresco" },
-      { label: "Magnético/a y lujoso/a", family: "oriental" },
-    ],
-  },
-  {
-    question: "Elegí la nota que más te atrae",
-    options: [
-      { label: "Vainilla y caramelo", family: "dulce" },
-      { label: "Cuero y vetiver", family: "amaderado" },
-      { label: "Jazmín y rosa", family: "floral" },
-      { label: "Cítricos y bergamota", family: "fresco" },
-      { label: "Ámbar y azafrán", family: "oriental" },
-    ],
-  },
-  {
-    question: "¿Para qué momento lo vas a usar más?",
-    options: [
-      { label: "Un mimo para vos", family: "dulce" },
-      { label: "Una salida de noche", family: "amaderado" },
-      { label: "Una cita especial", family: "floral" },
-      { label: "El día a día", family: "fresco" },
-      { label: "Un evento importante", family: "oriental" },
-    ],
-  },
-  {
-    question: "Elegí un color",
-    options: [
-      { label: "Rosa pastel", family: "dulce" },
-      { label: "Marrón tierra", family: "amaderado" },
-      { label: "Blanco cálido", family: "floral" },
-      { label: "Celeste", family: "fresco" },
-      { label: "Dorado", family: "oriental" },
-    ],
-  },
-];
+/** Arma las preguntas con los textos configurados por el cliente. */
+export function buildQuizQuestions(content: Record<string, string>): QuizQuestion[] {
+  return QUIZ_DEFAULTS.map((q, i) => ({
+    question: content[quizQuestionKey(i)] || q.question,
+    options: SCENT_FAMILIES.map(({ value }) => ({
+      family: value,
+      label: content[quizOptionKey(i, value)] || q.options[value],
+    })),
+  }));
+}
 
-// Recomendaciones armadas con las notas reales de las fichas del cliente —
-// se eligieron las fragancias mas premium (mayor precio) que mejor calzan
-// con cada familia olfativa.
-export const QUIZ_RESULTS: Record<
-  ScentFamily,
-  { productName: string; blurb: string }
-> = {
-  dulce: {
-    productName: "Eclaire",
-    blurb: "Gourmand y dulce: caramelo, vainilla y praliné sobre un fondo de almizcle.",
-  },
-  amaderado: {
-    productName: "Asad Bourbon",
-    blurb:
-      "Cálido y especiado: pimienta rosa, nuez moscada y cacao sobre vetiver, ámbar y vainilla bourbon.",
-  },
-  floral: {
-    productName: "Club de Nuit Woman",
-    blurb: "Floral elegante: durazno y bergamota, corazón de rosa y jazmín, fondo de vainilla.",
-  },
-  fresco: {
-    productName: "Club de Nuit Intense Man",
-    blurb: "Fresco y vibrante: cítricos y grosellas negras con jazmín y fondo amaderado.",
-  },
-  oriental: {
-    productName: "Club de Nuit Urban Elixir",
-    blurb: "Oriental y magnético: azahar y jazmín, especias y azafrán sobre ámbar y cedro.",
-  },
-};
-
+/**
+ * Perfil ganador. Siempre devuelve una familia: ante empate gana la que
+ * aparece primero en SCENT_FAMILIES, asi que cualquier combinacion de
+ * respuestas tiene resultado.
+ */
 export function scoreQuiz(answers: ScentFamily[]): ScentFamily {
-  const tally: Record<ScentFamily, number> = {
-    dulce: 0,
-    amaderado: 0,
-    floral: 0,
-    fresco: 0,
-    oriental: 0,
-  };
+  const tally = Object.fromEntries(SCENT_FAMILIES.map((f) => [f.value, 0])) as Record<
+    ScentFamily,
+    number
+  >;
   for (const a of answers) tally[a]++;
 
-  let winner: ScentFamily = "dulce";
+  let winner: ScentFamily = SCENT_FAMILIES[0].value;
   let max = -1;
-  for (const family of Object.keys(tally) as ScentFamily[]) {
-    if (tally[family] > max) {
-      max = tally[family];
-      winner = family;
+  for (const { value } of SCENT_FAMILIES) {
+    if (tally[value] > max) {
+      max = tally[value];
+      winner = value;
     }
   }
   return winner;

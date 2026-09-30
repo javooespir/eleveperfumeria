@@ -2,9 +2,15 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { clearAdminSession } from "@/lib/admin-auth";
-import { CONTENT_FIELDS } from "@/lib/site-content";
+import {
+  CONTENT_FIELDS,
+  QUIZ_PRODUCT_FIELDS,
+  QUIZ_TEXT_FIELDS,
+  type ContentField,
+} from "@/lib/site-content";
 
 export async function logoutAction() {
   await clearAdminSession();
@@ -94,6 +100,18 @@ export async function createCategory(formData: FormData) {
   const name = String(formData.get("name")).trim();
   if (!name) return;
   await prisma.category.create({ data: { name, slug: slugify(name) } });
+  revalidatePath("/admin/categorias");
+  revalidateStorefront();
+}
+
+export async function renameCategory(formData: FormData) {
+  const id = String(formData.get("id"));
+  const name = String(formData.get("name")).trim();
+  if (!name) return;
+
+  // El slug se regenera junto con el nombre para que el link del menu siga
+  // coincidiendo con la categoria.
+  await prisma.category.update({ where: { id }, data: { name, slug: slugify(name) } });
   revalidatePath("/admin/categorias");
   revalidateStorefront();
 }
@@ -198,22 +216,39 @@ export async function updateIntegrations(formData: FormData) {
 
 // ---- Textos de la landing ----
 
-export async function updateSiteContent(formData: FormData) {
-  const updates = CONTENT_FIELDS.map((field) => {
+async function saveContentFields(fields: ContentField[], formData: FormData) {
+  const updates = fields.map((field) => {
     const value = String(formData.get(field.key) ?? "").trim();
+    // Campo vacio vuelve al texto original, salvo que el default sea vacio
+    // (el producto del quiz, que puede quedar sin elegir a proposito).
     return { key: field.key, value: value || field.default };
   });
 
-  await prisma.$transaction(
-    updates.map((u) =>
-      prisma.siteContent.upsert({
-        where: { key: u.key },
-        update: { value: u.value },
-        create: { key: u.key, value: u.value },
-      })
-    )
+  // Un solo INSERT con ON CONFLICT en vez de un upsert por campo dentro de
+  // una transaccion: con 29 campos eran 29 idas y vueltas contra el pooler de
+  // Supabase, tardaba 6,6s y moria por el limite de 5s de la transaccion
+  // ("A rollback cannot be executed on an expired transaction"), asi que el
+  // quiz no se guardaba. Asi es una sola consulta y sigue siendo atomico.
+  const values = Prisma.join(
+    updates.map((u) => Prisma.sql`(${u.key}, ${u.value}, NOW())`)
   );
 
-  revalidatePath("/admin/textos");
+  await prisma.$executeRaw`
+    INSERT INTO "SiteContent" ("key", "value", "updatedAt")
+    VALUES ${values}
+    ON CONFLICT ("key") DO UPDATE
+      SET "value" = EXCLUDED."value", "updatedAt" = NOW()
+  `;
+
   revalidateStorefront();
+}
+
+export async function updateSiteContent(formData: FormData) {
+  await saveContentFields(CONTENT_FIELDS, formData);
+  revalidatePath("/admin/textos");
+}
+
+export async function updateQuizContent(formData: FormData) {
+  await saveContentFields([...QUIZ_TEXT_FIELDS, ...QUIZ_PRODUCT_FIELDS], formData);
+  revalidatePath("/admin/quiz");
 }

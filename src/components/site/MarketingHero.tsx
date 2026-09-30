@@ -8,6 +8,7 @@ import { Sparkles, PackageCheck, Truck, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BrandMarquee } from "@/components/site/BrandMarquee";
 import { useQuizStore } from "@/store/quiz";
+import { WholesaleHeroCard } from "@/components/site/WholesaleHeroCard";
 import type { SiteContent } from "@/lib/site-content";
 
 const EASE_OUT = "cubic-bezier(0.23, 1, 0.32, 1)";
@@ -130,62 +131,72 @@ export function MarketingHero({
             </div>
           </div>
 
-          <div className="lg:col-span-5 flex flex-col gap-5 mt-3 sm:mt-4 lg:mt-0">
-            <div className="hero-card relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-7 backdrop-blur-xl">
-              <div className="flex items-center gap-4 mb-6">
-                <div className="flex size-12 items-center justify-center rounded-2xl bg-white/10 ring-1 ring-white/15">
-                  <Sparkles className="size-5" />
-                </div>
-                <div>
-                  <div className="text-2xl font-medium tracking-tight">{productCount}+</div>
-                  <div className="text-sm text-background/60">fragancias disponibles</div>
-                </div>
+          {/* Columna derecha: la decision minorista/mayorista es lo primero
+              que conviene resolver, asi que ocupa este lugar. Las estadisticas
+              y las marcas pasaron a la franja de abajo. */}
+          <div className="lg:col-span-5 mt-3 sm:mt-4 lg:mt-0">
+            <WholesaleHeroCard />
+          </div>
+        </div>
+
+        <div className="hero-card grid grid-cols-1 sm:grid-cols-[auto_1fr] items-center gap-6 sm:gap-10 mt-10 sm:mt-14 rounded-3xl border border-white/10 bg-white/5 p-6 sm:p-7 backdrop-blur-xl">
+          <div className="flex flex-col gap-5">
+            <div className="flex items-center gap-4">
+              <div className="flex size-12 items-center justify-center rounded-2xl bg-white/10 ring-1 ring-white/15 shrink-0">
+                <Sparkles className="size-5" />
               </div>
-
-              <div className="flex flex-col gap-2.5 text-sm text-background/70 mb-6">
-                <div className="flex items-center gap-2.5">
-                  <Truck className="size-4 text-champagne shrink-0" />
-                  {content.hero_benefit_1}
-                </div>
-                <div className="flex items-center gap-2.5">
-                  <PackageCheck className="size-4 text-champagne shrink-0" />
-                  {content.hero_benefit_2}
-                </div>
-                <div className="flex items-center gap-2.5">
-                  <MessageCircle className="size-4 text-champagne shrink-0" />
-                  {content.hero_benefit_3}
-                </div>
+              <div>
+                <div className="text-2xl font-medium tracking-tight">{productCount}+</div>
+                <div className="text-sm text-background/60">fragancias disponibles</div>
               </div>
-
-              <div className="h-px w-full bg-white/10 mb-5" />
-
-              <div className="grid grid-cols-2 gap-4 text-center mb-6">
-                <div>
+              <div className="hidden sm:flex items-center gap-6 pl-6 ml-2 border-l border-white/10">
+                <div className="text-center">
                   <div className="text-lg font-medium">{brandCount}+</div>
                   <div className="text-[10px] uppercase tracking-wide text-background/50">Marcas</div>
                 </div>
-                <div>
+                <div className="text-center">
                   <div className="text-lg font-medium">{categoryCount}</div>
-                  <div className="text-[10px] uppercase tracking-wide text-background/50">Categorías</div>
+                  <div className="text-[10px] uppercase tracking-wide text-background/50">
+                    Categorías
+                  </div>
                 </div>
               </div>
+            </div>
 
-              <div className="flex flex-wrap gap-2">
-                <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] font-medium tracking-wide text-background/80">
-                  En stock
-                </span>
-                <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] font-medium tracking-wide text-background/80">
-                  Por pedido
-                </span>
+            <div className="flex flex-wrap gap-x-6 gap-y-2.5 text-sm text-background/70">
+              <div className="flex items-center gap-2.5">
+                <Truck className="size-4 text-champagne shrink-0" />
+                {content.hero_benefit_1}
+              </div>
+              <div className="flex items-center gap-2.5">
+                <PackageCheck className="size-4 text-champagne shrink-0" />
+                {content.hero_benefit_2}
+              </div>
+              <div className="flex items-center gap-2.5">
+                <MessageCircle className="size-4 text-champagne shrink-0" />
+                {content.hero_benefit_3}
               </div>
             </div>
 
-            <div className="hero-card relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 py-7 backdrop-blur-xl">
-              <h3 className="mb-5 px-7 text-xs uppercase tracking-wide text-background/50">
-                Nuestras marcas
-              </h3>
-              <BrandMarquee size="size-9" gap="mx-6" duration={26} dark />
+            <div className="flex sm:hidden gap-6">
+              <div>
+                <div className="text-lg font-medium">{brandCount}+</div>
+                <div className="text-[10px] uppercase tracking-wide text-background/50">Marcas</div>
+              </div>
+              <div>
+                <div className="text-lg font-medium">{categoryCount}</div>
+                <div className="text-[10px] uppercase tracking-wide text-background/50">
+                  Categorías
+                </div>
+              </div>
             </div>
+          </div>
+
+          <div className="w-full min-w-0 sm:border-l sm:border-white/10 sm:pl-8">
+            <h3 className="mb-4 text-xs uppercase tracking-wide text-background/50">
+              Nuestras marcas
+            </h3>
+            <BrandMarquee size="size-9" gap="mx-6" duration={26} dark />
           </div>
         </div>
       </div>

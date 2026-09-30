@@ -9,6 +9,7 @@ import {
   Type,
   Megaphone,
   Home,
+  Sparkles,
 } from "lucide-react";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { redirect } from "next/navigation";
@@ -24,6 +25,7 @@ const NAV = [
   { href: "/admin/categorias", label: "Categorías", icon: Tags },
   { href: "/admin/pedidos", label: "Pedidos", icon: ClipboardList },
   { href: "/admin/textos", label: "Textos", icon: Type },
+  { href: "/admin/quiz", label: "Quiz", icon: Sparkles },
   { href: "/admin/envio", label: "Envío y stock", icon: Truck },
   { href: "/admin/integraciones", label: "Integraciones", icon: Megaphone },
 ];

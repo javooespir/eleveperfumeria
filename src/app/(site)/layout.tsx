@@ -5,21 +5,27 @@ import { CartDrawer } from "@/components/site/CartDrawer";
 import { Footer } from "@/components/site/Footer";
 import { WholesaleReminder } from "@/components/site/WholesaleReminder";
 import { ScentQuiz } from "@/components/site/ScentQuiz";
-import { QUIZ_RESULTS } from "@/lib/quiz";
+import { SCENT_FAMILIES, quizProductKey } from "@/lib/quiz";
 import { getSiteContent } from "@/lib/site-content";
 import { getStoreConfig } from "@/lib/config";
 import { MetaPixel } from "@/components/site/MetaPixel";
 import type { Product } from "@/lib/types";
 
 export default async function SiteLayout({ children }: { children: React.ReactNode }) {
-  const quizProductNames = Object.values(QUIZ_RESULTS).map((r) => r.productName);
-
-  const [categories, quizProductsRaw, content, config] = await Promise.all([
+  // Los textos se leen primero porque de ahi salen los ids de los perfumes
+  // que recomienda el quiz (configurables desde /admin/quiz).
+  const [categories, content, config] = await Promise.all([
     prisma.category.findMany({ orderBy: { name: "asc" } }),
-    prisma.product.findMany({ where: { name: { in: quizProductNames }, isActive: true } }),
     getSiteContent(),
     getStoreConfig(),
   ]);
+
+  const quizProductIds = SCENT_FAMILIES.map((f) => content[quizProductKey(f.value)]).filter(
+    Boolean
+  );
+  const quizProductsRaw = quizProductIds.length
+    ? await prisma.product.findMany({ where: { id: { in: quizProductIds }, isActive: true } })
+    : [];
 
   const quizProducts: Product[] = quizProductsRaw.map((p) => ({
     id: p.id,
@@ -52,7 +58,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
       <Footer />
       <CartDrawer />
       <WholesaleReminder />
-      <ScentQuiz products={quizProducts} />
+      <ScentQuiz products={quizProducts} content={content} />
     </>
   );
 }

@@ -8,12 +8,25 @@ import { Button } from "@/components/ui/button";
 import { useQuizStore } from "@/store/quiz";
 import { useCartStore } from "@/store/cart";
 import { useEffectiveBuyerType } from "@/store/use-effective-buyer-type";
-import { QUIZ_QUESTIONS, QUIZ_RESULTS, scoreQuiz, type ScentFamily } from "@/lib/quiz";
+import {
+  buildQuizQuestions,
+  quizBlurbKey,
+  quizProductKey,
+  scoreQuiz,
+  type ScentFamily,
+} from "@/lib/quiz";
+import type { SiteContent } from "@/lib/site-content";
 import { finalPrice, type Product } from "@/lib/types";
 
 const money = (n: number) => `$${n.toLocaleString("es-AR")}`;
 
-export function ScentQuiz({ products }: { products: Product[] }) {
+export function ScentQuiz({
+  products,
+  content,
+}: {
+  products: Product[];
+  content: SiteContent;
+}) {
   const open = useQuizStore((s) => s.open);
   const setOpen = useQuizStore((s) => s.setOpen);
   const addItem = useCartStore((s) => s.addItem);
@@ -37,10 +50,14 @@ export function ScentQuiz({ products }: { products: Product[] }) {
     setStep((s) => s + 1);
   };
 
-  const isResult = step >= QUIZ_QUESTIONS.length;
+  const questions = buildQuizQuestions(content);
+  const isResult = step >= questions.length;
   const family = isResult ? scoreQuiz(answers) : null;
-  const result = family ? QUIZ_RESULTS[family] : null;
-  const product = result ? products.find((p) => p.name === result.productName) : null;
+  // El perfume se busca por id, no por nombre: antes estaba atado a nombres
+  // fijos y al renovarse el catalogo 4 de los 5 perfiles quedaron sin
+  // resultado, con el modal en blanco.
+  const product = family ? products.find((p) => p.id === content[quizProductKey(family)]) : null;
+  const blurb = family ? content[quizBlurbKey(family)] : null;
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -48,14 +65,14 @@ export function ScentQuiz({ products }: { products: Product[] }) {
         {!isResult ? (
           <>
             <DialogTitle className="font-heading text-lg font-medium">
-              {QUIZ_QUESTIONS[step].question}
+              {questions[step].question}
             </DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">
-              Pregunta {step + 1} de {QUIZ_QUESTIONS.length}
+              Pregunta {step + 1} de {questions.length}
             </DialogDescription>
 
             <div className="flex flex-col gap-2 mt-2">
-              {QUIZ_QUESTIONS[step].options.map((opt) => (
+              {questions[step].options.map((opt) => (
                 <button
                   key={opt.label}
                   onClick={() => handleAnswer(opt.family)}
@@ -67,7 +84,7 @@ export function ScentQuiz({ products }: { products: Product[] }) {
             </div>
 
             <div className="flex gap-1.5 mt-4">
-              {QUIZ_QUESTIONS.map((_, i) => (
+              {questions.map((_, i) => (
                 <span
                   key={i}
                   className={`h-1 flex-1 rounded-full ${i <= step ? "bg-foreground" : "bg-border"}`}
@@ -75,13 +92,13 @@ export function ScentQuiz({ products }: { products: Product[] }) {
               ))}
             </div>
           </>
-        ) : product && result ? (
+        ) : product ? (
           <>
             <DialogTitle className="font-heading text-lg font-medium">
               Tu fragancia es {product.name}
             </DialogTitle>
             <DialogDescription className="text-sm text-muted-foreground">
-              {result.blurb}
+              {blurb}
             </DialogDescription>
 
             <div className="flex gap-4 mt-2">
@@ -134,7 +151,28 @@ export function ScentQuiz({ products }: { products: Product[] }) {
               Repetir el quiz
             </button>
           </>
-        ) : null}
+        ) : (
+          // Sin perfume asignado a este perfil el quiz no puede quedar mudo:
+          // se ofrece el catalogo en vez de un modal vacio.
+          <>
+            <DialogTitle className="font-heading text-lg font-medium">
+              Tenemos varias que te van a gustar
+            </DialogTitle>
+            <DialogDescription className="text-sm text-muted-foreground">
+              Escribinos y te ayudamos a elegir, o mirá el catálogo completo.
+            </DialogDescription>
+            <div className="flex flex-col sm:flex-row gap-2 mt-5">
+              <Button asChild className="rounded-none flex-1">
+                <Link href="/catalogo" onClick={() => handleOpenChange(false)}>
+                  Ver catálogo
+                </Link>
+              </Button>
+              <Button variant="outline" className="rounded-none flex-1" onClick={reset}>
+                Repetir el quiz
+              </Button>
+            </div>
+          </>
+        )}
       </DialogContent>
     </Dialog>
   );

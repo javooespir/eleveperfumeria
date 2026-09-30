@@ -3,7 +3,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { createCategory, deleteCategory } from "../actions";
+import { createCategory } from "../actions";
+import { CategoryRow } from "./CategoryRow";
+
+export const dynamic = "force-dynamic";
 
 export default async function CategoriasPage() {
   const categories = await prisma.category.findMany({
@@ -43,22 +46,12 @@ export default async function CategoriasPage() {
             </thead>
             <tbody>
               {categories.map((c) => (
-                <tr key={c.id} className="border-b border-border last:border-0 hover:bg-muted/40">
-                  <td className="py-2.5 pl-4 pr-4">{c.name}</td>
-                  <td className="py-2.5 pr-4 text-muted-foreground">{c._count.products}</td>
-                  <td className="py-2.5 pr-4">
-                    <form action={deleteCategory} className="flex justify-end">
-                      <input type="hidden" name="id" value={c.id} />
-                      <button
-                        type="submit"
-                        disabled={c._count.products > 0}
-                        className="text-xs underline text-destructive disabled:opacity-30 disabled:no-underline"
-                      >
-                        Eliminar
-                      </button>
-                    </form>
-                  </td>
-                </tr>
+                <CategoryRow
+                  key={c.id}
+                  id={c.id}
+                  name={c.name}
+                  productCount={c._count.products}
+                />
               ))}
             </tbody>
           </table>
