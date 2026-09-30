@@ -219,8 +219,10 @@ export async function updateIntegrations(formData: FormData) {
 async function saveContentFields(fields: ContentField[], formData: FormData) {
   const updates = fields.map((field) => {
     const value = String(formData.get(field.key) ?? "").trim();
-    // Campo vacio vuelve al texto original, salvo que el default sea vacio
-    // (el producto del quiz, que puede quedar sin elegir a proposito).
+    // Campo vacio vuelve al texto original, salvo que el campo permita
+    // quedar vacio a proposito (renglones que el cliente quiere ocultar, o
+    // el producto del quiz cuando todavia no eligio ninguno).
+    if (field.allowEmpty) return { key: field.key, value };
     return { key: field.key, value: value || field.default };
   });
 

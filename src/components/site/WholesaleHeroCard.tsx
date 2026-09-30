@@ -6,6 +6,7 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { ChevronRight } from "lucide-react";
 import { MODE_DATA, type Mode } from "@/lib/buyer-modes";
+import type { SiteContent } from "@/lib/site-content";
 
 /**
  * Version compacta de minorista/mayorista para la columna derecha del hero.
@@ -14,7 +15,7 @@ import { MODE_DATA, type Mode } from "@/lib/buyer-modes";
  * toma el visitante) y bajar la tarjeta de estadisticas. Comparte MODE_DATA
  * con la seccion original para no tener dos textos que mantener.
  */
-export function WholesaleHeroCard() {
+export function WholesaleHeroCard({ content }: { content: SiteContent }) {
   const [mode, setMode] = useState<Mode>("retail");
   const data = MODE_DATA[mode];
   const isRetail = mode === "retail";
@@ -99,12 +100,16 @@ export function WholesaleHeroCard() {
       <div className="h-px w-full bg-white/10 my-5" />
 
       <div className="flex flex-col gap-2.5">
-        {data.features.map((feature) => (
-          <div key={feature.label} className="flex items-center gap-2.5 text-sm text-background/75">
-            <feature.icon className="size-4 text-champagne shrink-0" />
-            <span>{feature.label}</span>
-          </div>
-        ))}
+        {data.features
+          // Renglon vaciado desde el admin = renglon que no se muestra.
+          .map((f) => ({ ...f, text: content[f.key] ?? f.label }))
+          .filter((f) => f.text.trim())
+          .map((feature) => (
+            <div key={feature.key} className="flex items-center gap-2.5 text-sm text-background/75">
+              <feature.icon className="size-4 text-champagne shrink-0" />
+              <span>{feature.text}</span>
+            </div>
+          ))}
       </div>
 
       <div className="flex items-center justify-between gap-3 mt-5">

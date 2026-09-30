@@ -13,7 +13,9 @@ import { WHOLESALE_MIN_UNITS } from "@/lib/types";
 // Datos de las dos formas de compra. Viven aparte del componente porque los
 // usa la tarjeta del hero; antes estaban dentro de la seccion que se quito.
 
-type Feature = { label: string; icon: LucideIcon };
+// `key` enlaza cada renglon con su texto editable desde el admin. Si el
+// cliente borra ese texto, el renglon desaparece de la tarjeta.
+type Feature = { key: string; label: string; icon: LucideIcon };
 
 export type Mode = "retail" | "wholesale";
 
@@ -45,9 +47,9 @@ export const MODE_DATA: Record<Mode, ModeData> = {
     badge: "Sin mínimo de compra",
     stat: { label: "Envío a domicilio", icon: Truck },
     features: [
-      { label: "Todas las categorías", icon: Package },
-      { label: "3 y 6 cuotas sin interés", icon: CreditCard },
-      { label: "Coordinación por WhatsApp", icon: MessageCircle },
+      { key: "buyer_retail_feature_1", label: "Todas las categorías", icon: Package },
+      { key: "buyer_retail_feature_2", label: "3 y 6 cuotas sin interés", icon: CreditCard },
+      { key: "buyer_retail_feature_3", label: "Coordinación por WhatsApp", icon: MessageCircle },
     ],
   },
   wholesale: {
@@ -64,9 +66,9 @@ export const MODE_DATA: Record<Mode, ModeData> = {
     badge: "Precio preferencial",
     stat: { label: `Mínimo ${WHOLESALE_MIN_UNITS} unidades`, icon: Users },
     features: [
-      { label: "Precios especiales por volumen", icon: Tag },
-      { label: "Sin mínimo por artículo", icon: CheckCircle2 },
-      { label: "Coordinación por WhatsApp", icon: MessageCircle },
+      { key: "buyer_wholesale_feature_1", label: "Precios especiales por volumen", icon: Tag },
+      { key: "buyer_wholesale_feature_2", label: "Sin mínimo por artículo", icon: CheckCircle2 },
+      { key: "buyer_wholesale_feature_3", label: "Coordinación por WhatsApp", icon: MessageCircle },
     ],
   },
 };

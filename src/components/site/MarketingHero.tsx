@@ -135,7 +135,7 @@ export function MarketingHero({
               que conviene resolver, asi que ocupa este lugar. Las estadisticas
               y las marcas pasaron a la franja de abajo. */}
           <div className="lg:col-span-5 mt-3 sm:mt-4 lg:mt-0">
-            <WholesaleHeroCard />
+            <WholesaleHeroCard content={content} />
           </div>
         </div>
 

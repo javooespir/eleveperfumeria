@@ -20,7 +20,7 @@ export default async function TextosPage() {
     <div className="max-w-2xl">
       <h1 className="text-2xl font-heading font-light mb-1">Textos de la página</h1>
       <p className="text-sm text-muted-foreground mb-8">
-        Editá lo que dice la página de inicio. Si dejás un campo vacío se vuelve al texto original.
+        Editá lo que dice la página de inicio. Si dejás un campo vacío se vuelve al texto original, salvo los que aclaran lo contrario.
       </p>
 
       <form action={updateSiteContent} className="flex flex-col gap-6">
@@ -48,6 +48,11 @@ export default async function TextosPage() {
                       defaultValue={content[field.key]}
                       placeholder={field.default}
                     />
+                  )}
+                  {field.allowEmpty && (
+                    <p className="text-xs text-muted-foreground">
+                      Si lo dejás vacío, este renglón no se muestra en la página.
+                    </p>
                   )}
                 </div>
               ))}

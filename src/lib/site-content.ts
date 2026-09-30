@@ -18,6 +18,9 @@ export type ContentField = {
   label: string;
   group: string;
   multiline?: boolean;
+  /** Si es true, dejar el campo vacio lo guarda vacio en vez de volver al
+   *  texto original. Sirve para renglones que el cliente quiere poder sacar. */
+  allowEmpty?: boolean;
   default: string;
 };
 
@@ -130,6 +133,52 @@ export const CONTENT_FIELDS: ContentField[] = [
     label: "Botón",
     group: "Cierre de la página",
     default: "Ver catálogo completo",
+  },
+
+  // ---- Tarjeta minorista / mayorista de la portada ----
+  // Se pueden vaciar: el renglon desaparece de la tarjeta. Pensado para
+  // cosas que todavia no se ofrecen, como las cuotas.
+  {
+    key: "buyer_retail_feature_1",
+    label: "Minorista — renglón 1",
+    group: "Tarjeta minorista / mayorista",
+    allowEmpty: true,
+    default: "Todas las categorías",
+  },
+  {
+    key: "buyer_retail_feature_2",
+    label: "Minorista — renglón 2",
+    group: "Tarjeta minorista / mayorista",
+    allowEmpty: true,
+    default: "3 y 6 cuotas sin interés",
+  },
+  {
+    key: "buyer_retail_feature_3",
+    label: "Minorista — renglón 3",
+    group: "Tarjeta minorista / mayorista",
+    allowEmpty: true,
+    default: "Coordinación por WhatsApp",
+  },
+  {
+    key: "buyer_wholesale_feature_1",
+    label: "Mayorista — renglón 1",
+    group: "Tarjeta minorista / mayorista",
+    allowEmpty: true,
+    default: "Precios especiales por volumen",
+  },
+  {
+    key: "buyer_wholesale_feature_2",
+    label: "Mayorista — renglón 2",
+    group: "Tarjeta minorista / mayorista",
+    allowEmpty: true,
+    default: "Sin mínimo por artículo",
+  },
+  {
+    key: "buyer_wholesale_feature_3",
+    label: "Mayorista — renglón 3",
+    group: "Tarjeta minorista / mayorista",
+    allowEmpty: true,
+    default: "Coordinación por WhatsApp",
   },
 ];
 
