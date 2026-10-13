@@ -1,22 +1,38 @@
 "use client";
 
-import { useState } from "react";
+
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { ChevronRight } from "lucide-react";
 import { MODE_DATA, type Mode } from "@/lib/buyer-modes";
+import { useBuyerTypeStore } from "@/store/buyer-type";
+import { useEffectiveBuyerType } from "@/store/use-effective-buyer-type";
+import { useCartStore, cartCount } from "@/store/cart";
+import { useHydrated } from "@/store/use-hydrated";
+import { WHOLESALE_MIN_UNITS } from "@/lib/types";
 import type { SiteContent } from "@/lib/site-content";
 
 /**
  * Version compacta de minorista/mayorista para la columna derecha del hero.
  *
- * El cliente pidio subir esta informacion (es la decision mas importante que
- * toma el visitante) y bajar la tarjeta de estadisticas. Comparte MODE_DATA
- * con la seccion original para no tener dos textos que mantener.
+ * El selector esta enganchado al tipo de compra real del sitio. Antes era un
+ * useState suelto: mostraba "Minorista" aunque el visitante hubiera elegido
+ * mayorista en el catalogo, y "Ver catalogo" lo llevaba a precios mayoristas
+ * sin aviso. Ahora refleja el estado real y tocarlo lo cambia.
  */
 export function WholesaleHeroCard({ content }: { content: SiteContent }) {
-  const [mode, setMode] = useState<Mode>("retail");
+  const setBuyerType = useBuyerTypeStore((s) => s.setBuyerType);
+  // El carrito vive en el navegador: hasta hidratar se cuenta 0, igual que
+  // renderizo el servidor, para no romper la hidratacion.
+  const hydrated = useHydrated();
+  const storedUnits = useCartStore((s) => cartCount(s.items));
+  const units = hydrated ? storedUnits : 0;
+  // El efectivo ya contempla el salto automatico a mayorista por cantidad.
+  const buyerType = useEffectiveBuyerType();
+  const forcedByCart = units >= WHOLESALE_MIN_UNITS;
+
+  const mode: Mode = buyerType === "mayorista" ? "wholesale" : "retail";
   const data = MODE_DATA[mode];
   const isRetail = mode === "retail";
   const StatIcon = data.stat.icon;
@@ -34,7 +50,8 @@ export function WholesaleHeroCard({ content }: { content: SiteContent }) {
             <button
               key={opt}
               type="button"
-              onClick={() => setMode(opt)}
+              onClick={() => setBuyerType(opt === "wholesale" ? "mayorista" : "minorista")}
+              disabled={forcedByCart}
               className="relative flex-1 h-10 rounded-full flex items-center justify-center text-sm font-medium"
             >
               {active && (
@@ -111,6 +128,12 @@ export function WholesaleHeroCard({ content }: { content: SiteContent }) {
             </div>
           ))}
       </div>
+
+      {forcedByCart && (
+        <p className="text-[11px] text-champagne mt-4">
+          Tenés {units} unidades en el carrito: el precio mayorista ya está aplicado.
+        </p>
+      )}
 
       <div className="flex items-center justify-between gap-3 mt-5">
         <span className="flex items-center gap-2 text-xs text-background/60">

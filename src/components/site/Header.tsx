@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useCartStore, cartCount } from "@/store/cart";
 import { useHydrated } from "@/store/use-hydrated";
+import { useEffectiveBuyerType } from "@/store/use-effective-buyer-type";
 import { useBuyerTypeStore } from "@/store/buyer-type";
 import { Logo } from "@/components/site/Logo";
 import type { Category } from "@/lib/types";
@@ -26,7 +27,11 @@ export function Header({ categories }: { categories: Category[] }) {
   // guardado en el navegador.
   const count = hydrated ? cartCount(items) : 0;
   const storedBuyerType = useBuyerTypeStore((s) => s.buyerType);
-  const buyerType = hydrated ? storedBuyerType : null;
+  // Se muestra el tipo que realmente se esta aplicando, no el elegido: con
+  // 5 o mas unidades el precio pasa a mayorista solo, y el header decia
+  // "Minorista" mientras los precios ya eran mayoristas.
+  const effectiveBuyerType = useEffectiveBuyerType();
+  const buyerType = hydrated && storedBuyerType ? effectiveBuyerType : null;
   const resetBuyerType = useBuyerTypeStore((s) => s.reset);
 
   const handleResetBuyerType = () => {
@@ -82,10 +87,13 @@ export function Header({ categories }: { categories: Category[] }) {
         <Logo />
 
         <div className="flex items-center gap-4">
+          {/* Tambien visible en celular: antes estaba oculto con `hidden
+              sm:flex` y el visitante no tenia forma de saber que precios
+              estaba viendo. */}
           {buyerType && (
             <button
               onClick={handleResetBuyerType}
-              className="hidden sm:flex items-center gap-1.5 rounded-full border border-border px-3 py-1 text-xs text-muted-foreground hover:border-foreground hover:text-foreground transition-colors"
+              className="flex items-center gap-1.5 rounded-full border border-border px-2.5 sm:px-3 py-1 text-[11px] sm:text-xs text-muted-foreground hover:border-foreground hover:text-foreground transition-colors"
               title="Cambiar tipo de compra"
             >
               {buyerType === "mayorista" ? "Mayorista" : "Minorista"}
