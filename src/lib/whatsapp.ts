@@ -16,9 +16,10 @@ export function buildWhatsAppMessage(params: {
   shippingCost: number;
   total: number;
   customerName: string;
+  /** null cuando el envio se coordina por WhatsApp: no se pidio direccion. */
+  address: string | null;
+  zone: string | null;
   phone: string;
-  address: string;
-  zone: string;
 }) {
   const {
     lines: orderLines,
@@ -40,13 +41,13 @@ export function buildWhatsAppMessage(params: {
     ),
     "",
     `Subtotal: ${money(subtotal)}${buyerType === "mayorista" ? " (precio mayorista)" : ""}`,
-    `Envío: ${shippingCost === 0 ? "Gratis" : money(shippingCost)}`,
+    `Envío: ${address ? (shippingCost === 0 ? "Gratis" : money(shippingCost)) : "a coordinar"}`,
     `Total: ${money(total)}`,
     "",
     `Nombre: ${customerName}`,
     `Teléfono: ${phone}`,
-    `Dirección: ${address}`,
-    `Zona: ${zone}`,
+    ...(address ? [`Dirección: ${address}`] : []),
+    ...(zone ? [`Zona: ${zone}`] : []),
   ];
 
   return lines.join("\n");

@@ -6,6 +6,7 @@ import Image from "next/image";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Truck } from "lucide-react";
 import { useCartStore, cartSubtotal, cartCount, itemUnitPrice } from "@/store/cart";
 import { useBuyerTypeStore } from "@/store/buyer-type";
 import { useEffectiveBuyerType } from "@/store/use-effective-buyer-type";
@@ -19,13 +20,26 @@ import {
   type ShippingZone,
 } from "@/lib/shipping";
 import { buildWhatsAppMessage, buildWhatsAppLink } from "@/lib/whatsapp";
+import type { ShippingMode } from "@/lib/config";
 import { AddressFields } from "@/components/site/AddressFields";
 import { trackPixel } from "@/components/site/MetaPixel";
 import { emptyAddress, formatAddress, validateAddress, type AddressParts } from "@/lib/address";
 
 const money = (n: number) => `$${n.toLocaleString("es-AR")}`;
 
-export function CheckoutForm({ rules }: { rules: ShippingRules }) {
+export function CheckoutForm({
+  rules,
+  shippingMode,
+  shippingNotice,
+}: {
+  rules: ShippingRules;
+  shippingMode: ShippingMode;
+  shippingNotice: string;
+}) {
+  // En modo "coordinar" el checkout no pide direccion ni zona y no cobra
+  // envio: se arregla por WhatsApp. Los campos siguen en el codigo para
+  // poder volver a activarlos desde el admin.
+  const coordinaPorWhatsApp = shippingMode === "coordinar";
   const router = useRouter();
   const hydrated = useHydrated();
   const storedItems = useCartStore((s) => s.items);
@@ -45,8 +59,8 @@ export function CheckoutForm({ rules }: { rules: ShippingRules }) {
   const [error, setError] = useState<string | null>(null);
 
   const shippingCost = useMemo(
-    () => (zone ? calcularEnvio(zone, subtotal, rules) : 0),
-    [zone, subtotal, rules]
+    () => (coordinaPorWhatsApp || !zone ? 0 : calcularEnvio(zone, subtotal, rules)),
+    [coordinaPorWhatsApp, zone, subtotal, rules]
   );
   const total = subtotal + shippingCost;
 
@@ -54,8 +68,7 @@ export function CheckoutForm({ rules }: { rules: ShippingRules }) {
     items.length > 0 &&
     customerName &&
     phone &&
-    address.street &&
-    zone &&
+    (coordinaPorWhatsApp || (address.street && zone)) &&
     !submitting &&
     !belowWholesaleMin;
 
@@ -63,25 +76,33 @@ export function CheckoutForm({ rules }: { rules: ShippingRules }) {
     e.preventDefault();
     if (!canSubmit) return;
 
-    const addressError = validateAddress(address);
-    if (addressError) {
-      setError(addressError);
-      return;
+    if (!coordinaPorWhatsApp) {
+      const addressError = validateAddress(address);
+      if (addressError) {
+        setError(addressError);
+        return;
+      }
     }
 
     setSubmitting(true);
     setError(null);
 
-    const payload = {
-      customerName,
-      phone,
-      street: address.street,
-      addressExtra: address.extra,
-      locality: address.locality,
-      postalCode: address.postalCode,
-      zone,
-      items: items.map((i) => ({ productId: i.productId, qty: i.qty })),
-    };
+    const payload = coordinaPorWhatsApp
+      ? {
+          customerName,
+          phone,
+          items: items.map((i) => ({ productId: i.productId, qty: i.qty })),
+        }
+      : {
+          customerName,
+          phone,
+          street: address.street,
+          addressExtra: address.extra,
+          locality: address.locality,
+          postalCode: address.postalCode,
+          zone,
+          items: items.map((i) => ({ productId: i.productId, qty: i.qty })),
+        };
 
     // El servidor recalcula precios y totales; se usan los suyos para el
     // mensaje de WhatsApp asi el pedido guardado y el que le llega al
@@ -124,8 +145,8 @@ export function CheckoutForm({ rules }: { rules: ShippingRules }) {
       total: confirmed.total,
       customerName,
       phone,
-      address: formatAddress(address),
-      zone: zoneLabel(zone),
+      address: coordinaPorWhatsApp ? null : formatAddress(address),
+      zone: coordinaPorWhatsApp ? null : zoneLabel(zone as ShippingZone),
     });
     window.open(buildWhatsAppLink(message), "_blank");
     clear();
@@ -175,7 +196,15 @@ export function CheckoutForm({ rules }: { rules: ShippingRules }) {
             </div>
             <div className="flex justify-between">
               <span>Envío</span>
-              <span>{!zone ? "—" : shippingCost === 0 ? "Gratis" : money(shippingCost)}</span>
+              <span>
+                {coordinaPorWhatsApp
+                  ? "A coordinar"
+                  : !zone
+                    ? "—"
+                    : shippingCost === 0
+                      ? "Gratis"
+                      : money(shippingCost)}
+              </span>
             </div>
             <div className="flex justify-between font-medium text-base mt-1">
               <span>Total</span>
@@ -211,27 +240,36 @@ export function CheckoutForm({ rules }: { rules: ShippingRules }) {
         />
       </div>
 
-      <AddressFields value={address} onChange={setAddress} />
+      {coordinaPorWhatsApp ? (
+        <div className="flex items-start gap-3 rounded-lg border border-border bg-muted/40 px-4 py-3">
+          <Truck className="size-4 mt-0.5 shrink-0 text-muted-foreground" />
+          <p className="text-sm">{shippingNotice}</p>
+        </div>
+      ) : (
+        <>
+          <AddressFields value={address} onChange={setAddress} />
 
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="zona">Zona de entrega</Label>
-        <select
-          id="zona"
-          value={zone}
-          onChange={(e) => setZone(e.target.value as ShippingZone)}
-          required
-          className="border border-input bg-background rounded-md px-3 py-2 text-sm h-11"
-        >
-          <option value="" disabled>
-            Elegí tu zona
-          </option>
-          {SHIPPING_ZONES.map((z) => (
-            <option key={z.value} value={z.value}>
-              {z.label}
-            </option>
-          ))}
-        </select>
-      </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="zona">Zona de entrega</Label>
+            <select
+              id="zona"
+              value={zone}
+              onChange={(e) => setZone(e.target.value as ShippingZone)}
+              required
+              className="border border-input bg-background rounded-md px-3 py-2 text-sm h-11"
+            >
+              <option value="" disabled>
+                Elegí tu zona
+              </option>
+              {SHIPPING_ZONES.map((z) => (
+                <option key={z.value} value={z.value}>
+                  {z.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        </>
+      )}
 
       {error && (
         <p className="text-xs text-destructive text-center -mt-2">{error}</p>

@@ -135,6 +135,15 @@ export const CONTENT_FIELDS: ContentField[] = [
     default: "Ver catálogo completo",
   },
 
+  // ---- Checkout ----
+  {
+    key: "checkout_shipping_notice",
+    label: "Cartel de envío (cuando se coordina por WhatsApp)",
+    group: "Checkout",
+    multiline: true,
+    default: "Envío a coordinar por WhatsApp",
+  },
+
   // ---- Tarjeta minorista / mayorista de la portada ----
   // Se pueden vaciar: el renglon desaparece de la tarjeta. Pensado para
   // cosas que todavia no se ofrecen, como las cuotas.

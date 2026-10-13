@@ -72,11 +72,21 @@ export default async function PedidosPage() {
                       <p className="text-xs text-muted-foreground break-words">
                         {o.phone}
                       </p>
-                      <p className="text-xs text-muted-foreground break-words">{o.address}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {zoneLabel(o.zone)}
-                        {o.postalCode ? ` · CP ${o.postalCode}` : ""}
-                      </p>
+                      {/* Sin direccion = pedido tomado con el envio a
+                          coordinar por WhatsApp. */}
+                      {o.address ? (
+                        <>
+                          <p className="text-xs text-muted-foreground break-words">{o.address}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {o.zone ? zoneLabel(o.zone) : ""}
+                            {o.postalCode ? ` · CP ${o.postalCode}` : ""}
+                          </p>
+                        </>
+                      ) : (
+                        <p className="text-xs text-muted-foreground">
+                          Envío a coordinar por WhatsApp
+                        </p>
+                      )}
                       <p className="text-xs text-muted-foreground mt-1">
                         {new Date(o.createdAt).toLocaleString("es-AR")}
                       </p>

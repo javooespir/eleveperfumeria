@@ -47,12 +47,14 @@ model Order {
   // mensaje de WhatsApp). Los campos sueltos quedan aparte porque el barrio
   // y el codigo postal los escribe el cliente: antes los completaba el
   // buscador y metia datos equivocados.
-  address     String
+  // Opcionales porque con el envio "a coordinar por WhatsApp" el checkout
+  // no pide direccion ni zona: esos pedidos se cierran por chat.
+  address     String?
   street      String?     // calle y altura
   addressExtra String?    // piso / depto
   locality    String?     // localidad o barrio
   postalCode  String?
-  zone        String      // "caba" | "zona_oeste" | "buenos_aires" | "otras_provincias"
+  zone        String?     // "caba" | "zona_oeste" | "buenos_aires" | "otras_provincias"
   buyerType   String      @default("minorista") // "minorista" | "mayorista"
   itemsJson   String      // JSON-encoded array of {productId, name, qty, unitPrice}
   subtotal    Float
@@ -81,6 +83,11 @@ model ShippingConfig {
   // ID del pixel de Meta (Facebook/Instagram Ads). Vacio = no se carga
   // ningun script de seguimiento.
   metaPixelId           String?
+  // "zonas"     -> el checkout pide direccion y cobra envio segun la zona
+  // "coordinar" -> no pide direccion y avisa que el envio se arregla por
+  //                WhatsApp. Se alterna desde /admin/envio; la pantalla de
+  //                direccion queda en el codigo para volver a activarla.
+  shippingMode          String @default("zonas")
 }
 
 // Textos editables de la landing, como key-value. La key es un id estable

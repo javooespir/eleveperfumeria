@@ -179,6 +179,9 @@ export async function deleteOrder(formData: FormData) {
 
 export async function updateShippingConfig(formData: FormData) {
   const data = {
+    // El checkout pide direccion y cobra envio, o avisa que se coordina por
+    // WhatsApp. Los campos de direccion quedan en el codigo para volver.
+    shippingMode: formData.get("shippingMode") === "coordinar" ? "coordinar" : "zonas",
     freeShippingMinAmount: Number(formData.get("freeShippingMinAmount")),
     lowStockThreshold: Number(formData.get("lowStockThreshold")),
     costCaba: Number(formData.get("costCaba")),

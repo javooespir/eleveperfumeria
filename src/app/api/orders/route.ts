@@ -37,28 +37,31 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Completá nombre y teléfono válidos." }, { status: 400 });
   }
 
+  // El modo de envio lo decide el servidor leyendo la config, no el
+  // navegador: si no, cualquiera podria mandar un pedido "a coordinar" para
+  // saltearse el costo de envio.
+  const config = await getStoreConfig();
+  const coordinaPorWhatsApp = config.shippingMode === "coordinar";
+
   // La direccion se revalida en el servidor: el navegador puede saltearse
   // los `required` del formulario.
-  const addressError = validateAddress(parts);
-  if (addressError) return NextResponse.json({ error: addressError }, { status: 400 });
+  let addressClean: string | null = null;
 
-  const addressClean = formatAddress(parts);
+  if (!coordinaPorWhatsApp) {
+    const addressError = validateAddress(parts);
+    if (addressError) return NextResponse.json({ error: addressError }, { status: 400 });
 
-  if (!SHIPPING_ZONES.some((z) => z.value === zone)) {
-    return NextResponse.json({ error: "Elegí una zona de entrega." }, { status: 400 });
+    addressClean = formatAddress(parts);
+
+    if (!SHIPPING_ZONES.some((z) => z.value === zone)) {
+      return NextResponse.json({ error: "Elegí una zona de entrega." }, { status: 400 });
+    }
   }
 
   const cartItems = (items ?? []).filter((i) => i?.productId && Number(i.qty) > 0);
   if (cartItems.length === 0) {
     return NextResponse.json({ error: "El carrito está vacío." }, { status: 400 });
   }
-
-  // La config se lee ANTES de abrir la transaccion. Leerla adentro usaba el
-  // cliente global (no `tx`), asi que pedia una segunda conexion mientras la
-  // transaccion tenia tomada la del pool: contra el pooler de Supabase eso
-  // termina en "Unable to start a transaction in the given time" y el pedido
-  // se perdia con un error 500.
-  const config = await getStoreConfig();
 
   try {
     const order = await prisma.$transaction(async (tx) => {
@@ -97,18 +100,21 @@ export async function POST(request: Request) {
       }
 
       const subtotal = lines.reduce((sum, l) => sum + l.unitPrice * l.qty, 0);
-      const shippingCost = calcularEnvio(zone as ShippingZone, subtotal, config);
+      // Sin direccion no hay zona, asi que el envio se arregla aparte.
+      const shippingCost = coordinaPorWhatsApp
+        ? 0
+        : calcularEnvio(zone as ShippingZone, subtotal, config);
 
       return tx.order.create({
         data: {
           customerName: name,
           phone: phoneClean,
           address: addressClean,
-          street: parts.street,
-          addressExtra: parts.extra || null,
-          locality: parts.locality,
-          postalCode: parts.postalCode,
-          zone: zone as string,
+          street: coordinaPorWhatsApp ? null : parts.street,
+          addressExtra: coordinaPorWhatsApp ? null : parts.extra || null,
+          locality: coordinaPorWhatsApp ? null : parts.locality,
+          postalCode: coordinaPorWhatsApp ? null : parts.postalCode,
+          zone: coordinaPorWhatsApp ? null : (zone as string),
           buyerType,
           itemsJson: JSON.stringify(lines),
           subtotal,
