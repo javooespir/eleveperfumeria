@@ -3,7 +3,7 @@ import type { BuyerType } from "@/lib/types";
 // Unico numero de WhatsApp del negocio: pedidos y contacto del footer salen
 // de aca, para que cambiarlo sea un solo lugar (variable de entorno).
 export const WHATSAPP_NUMBER =
-  process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "5491138752317";
+  process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "5491170614454";
 
 export const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMBER}`;
 
