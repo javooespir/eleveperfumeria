@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Minus, Plus } from "lucide-react";
 import {
@@ -19,6 +19,7 @@ import {
 import { finalPrice, type Product } from "@/lib/types";
 import { useCartStore } from "@/store/cart";
 import { useEffectiveBuyerType } from "@/store/use-effective-buyer-type";
+import { trackPixel, ARS } from "@/lib/pixel";
 
 const money = (n: number) => `$${n.toLocaleString("es-AR")}`;
 
@@ -33,6 +34,18 @@ export function ProductModal({
   const addItem = useCartStore((s) => s.addItem);
   const buyerType = useEffectiveBuyerType();
   const open = () => setQty(1);
+
+  // Meta usa ViewContent para armar publicos de remarketing con la gente
+  // que miro un producto y no compro.
+  useEffect(() => {
+    if (!product) return;
+    trackPixel("ViewContent", {
+      value: product.price,
+      currency: ARS,
+      content_name: product.name,
+      content_ids: [product.id],
+    });
+  }, [product]);
 
   if (!product) return null;
 

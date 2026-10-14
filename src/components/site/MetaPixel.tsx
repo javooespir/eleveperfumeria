@@ -41,8 +41,4 @@ fbq('track', 'PageView');
   );
 }
 
-/** Dispara un evento estandar de Meta si el pixel esta cargado. */
-export function trackPixel(event: string, data?: Record<string, unknown>) {
-  const fbq = (window as unknown as { fbq?: (...args: unknown[]) => void }).fbq;
-  if (typeof fbq === "function") fbq("track", event, data);
-}
+

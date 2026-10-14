@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Input } from "@/components/ui/input";
@@ -22,7 +22,7 @@ import {
 import { buildWhatsAppMessage, buildWhatsAppLink } from "@/lib/whatsapp";
 import type { ShippingMode } from "@/lib/config";
 import { AddressFields } from "@/components/site/AddressFields";
-import { trackPixel } from "@/components/site/MetaPixel";
+import { trackPixel, ARS } from "@/lib/pixel";
 import { emptyAddress, formatAddress, validateAddress, type AddressParts } from "@/lib/address";
 
 const money = (n: number) => `$${n.toLocaleString("es-AR")}`;
@@ -57,6 +57,16 @@ export function CheckoutForm({
   const [zone, setZone] = useState<ShippingZone | "">("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Se avisa una sola vez, cuando ya se sabe que hay carrito: es el paso
+  // del embudo que Meta mira para optimizar hacia quien llega a pagar.
+  const startedCheckout = items.length > 0;
+  useEffect(() => {
+    if (!startedCheckout) return;
+    trackPixel("InitiateCheckout", { value: subtotal, currency: ARS });
+    // Solo al entrar con carrito; no se repite si cambian las cantidades.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [startedCheckout]);
 
   const shippingCost = useMemo(
     () => (coordinaPorWhatsApp || !zone ? 0 : calcularEnvio(zone, subtotal, rules)),
@@ -135,7 +145,7 @@ export function CheckoutForm({
     }
 
     // El pedido ya quedo guardado: recien ahi cuenta como conversion.
-    trackPixel("Purchase", { value: confirmed.total, currency: "ARS" });
+    trackPixel("Purchase", { value: confirmed.total, currency: ARS });
 
     const message = buildWhatsAppMessage({
       lines: confirmed.items,

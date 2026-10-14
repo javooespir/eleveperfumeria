@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { finalPrice, type BuyerType } from "@/lib/types";
+import { trackPixel, ARS } from "@/lib/pixel";
 
 // El item guarda los precios del producto, no un unitPrice ya calculado:
 // el precio efectivo depende del tipo de compra, que puede cambiar despues
@@ -39,6 +40,15 @@ export const useCartStore = create<CartState>()(
       isOpen: false,
       addItem: (item, qty = 1) =>
         set((state) => {
+          // Todos los "agregar al carrito" del sitio pasan por aca, asi que
+          // es el unico lugar donde hace falta avisarle al pixel.
+          trackPixel("AddToCart", {
+            value: item.price * qty,
+            currency: ARS,
+            content_name: item.name,
+            content_ids: [item.productId],
+          });
+
           const existing = state.items.find((i) => i.productId === item.productId);
           if (existing) {
             const nextQty = Math.min(existing.qty + qty, existing.stock);
