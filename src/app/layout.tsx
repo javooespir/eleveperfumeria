@@ -21,6 +21,13 @@ export const metadata: Metadata = {
   description:
     "Catálogo de fragancias ELEVÉ. Envíos a domicilio y coordinación por WhatsApp.",
   alternates: { canonical: "/" },
+  // Verificacion del dominio en Meta Business. Tiene que salir dentro del
+  // <head> y renderizada por el servidor: Meta no la lee si la inyecta
+  // JavaScript. El mismo token esta ademas en public/ como archivo HTML,
+  // por si se usa ese metodo de verificacion.
+  verification: {
+    other: { "facebook-domain-verification": "rithfk03dn9ril9f7clw6jdgeeql4m" },
+  },
   openGraph: {
     type: "website",
     locale: "es_AR",
